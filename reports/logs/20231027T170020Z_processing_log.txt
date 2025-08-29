@@ -1,0 +1,41 @@
+Enhanced Processing Log for 20231027T170020Z
+============================================================
+Processed at: 2025-08-24 15:30:20
+Status: success
+Processing time: 336.65 seconds
+
+Step 1 - Video Processing Stats:
+  total_frames: 18471
+  frames_with_markers: 16984
+  frames_with_valid_homography: 954
+  frames_with_gaze: 16695
+  transformation_history_length: 18471
+
+Step 2 - Final CSV Stats:
+  success: True
+  input_gaze_samples: 73888
+  transformation_records: 18471
+  output_csv_records: 73888
+  valid_transformations: 71762
+  invalid_transformations: 2126
+  valid_percentage: 97.12267215244694
+  output_csv_path: /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_final_gaze_data.csv
+  frame_dimensions: (1920, 1080)
+
+Step 3 - Heatmap Analysis Stats:
+  Visualizations created: 4
+  Valid gaze points: 70,338
+  Data quality: 95.2%
+
+Output Files:
+  output_dir: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z
+  corrected_video: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_gaze_corrected_video.mp4
+  intermediate_csv: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_gaze_output.csv
+  transformation_history: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_transformation_history.npy
+  final_csv: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_final_gaze_data.csv
+  processing_log: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027T170020Z_processing_log.txt
+  gaze_stats: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027T170020Z_gaze_statistics.json
+  heatmap_png: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_heatmap.png
+  scatter_png: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_scatter.png
+  contour_png: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_contour.png
+  dashboard_png: Yes /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_dashboard.png

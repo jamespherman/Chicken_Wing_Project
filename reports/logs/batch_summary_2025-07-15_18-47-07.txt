@@ -1,0 +1,23 @@
+ENHANCED BATCH PROCESSING SUMMARY
+============================================================
+Generated at: 2025-07-15 18:47:07
+============================================================
+
+Total subjects processed: 4
+Successful (all steps): 4
+Failed: 0
+Skipped: 0
+Overall success rate: 100.0%
+
+Heatmap visualizations created: 3/4
+Heatmap success rate: 75.0%
+Total gaze points analyzed: 262,786
+
+OUTPUT DIRECTORY STRUCTURE:
+----------------------------------------
+All images (.png): D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\reports\figures
+All logs (.txt, .json): D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\reports\logs
+All data files: D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\data
+
+INDIVIDUAL RESULTS:
+----------------------------------------

@@ -1,0 +1,35 @@
+ENHANCED BATCH PROCESSING SUMMARY
+============================================================
+Generated at: 2025-08-24 15:48:32
+============================================================
+
+Total subjects discovered: 4
+Subjects processed: 3
+Successful (all steps): 3
+Failed: 0
+Skipped (skip list): 1
+Skipped (existing outputs): 0
+Overall success rate: 100.0%
+
+SKIP LIST INFORMATION:
+----------------------------------------
+Skip list enabled: Yes
+Subjects in skip list: 1
+Skip list contents: 20231012T122519Z
+Subjects actually skipped: 1
+
+Heatmap visualizations created: 3/3
+Heatmap success rate: 100.0%
+Total gaze points analyzed: 263,037
+
+OUTPUT DIRECTORY STRUCTURE:
+----------------------------------------
+All images (.png): /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures
+All logs (.txt, .json): /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs
+All processed data: /Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed
+
+INDIVIDUAL RESULTS:
+----------------------------------------
+✓ 20231027T170020Z: success (97.1% valid gaze), 4 visualizations (336.6s)
+✓ 20231027T171918Z: success (93.7% valid gaze), 4 visualizations (640.9s)
+✓ 20231027TXXXXXXZ: success (99.4% valid gaze), 4 visualizations (450.8s)

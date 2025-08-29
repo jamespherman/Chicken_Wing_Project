@@ -1,0 +1,126 @@
+{
+  "processing_session": {
+    "start_time": "2025-07-31T14:08:46.811978",
+    "end_time": "2025-07-31T14:10:24.081105",
+    "total_duration": 97.26912879943848,
+    "config": {
+      "input_base_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/raw",
+      "output_base_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project",
+      "video_filename": "scenevideo.mp4",
+      "gaze_filename": "gazedata.gz",
+      "subject_folder_pattern": "*",
+      "output_width": 1000,
+      "target_markers": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "frame_width": 1920,
+      "frame_height": 1080,
+      "processing_options": {
+        "use_preselected_parameters": false,
+        "use_frame_preprocessing": false,
+        "use_outer_points": false,
+        "show_video": false
+      },
+      "skip_existing": true,
+      "create_summary_report": true,
+      "generate_heatmaps": true,
+      "heatmap_config": {
+        "figure_size": [
+          12,
+          8
+        ],
+        "dpi": 300,
+        "color_scheme": "viridis",
+        "heatmap_bins": 50,
+        "gaussian_sigma": 1.0,
+        "output_format": "png",
+        "create_heatmap": true,
+        "create_scatter": true,
+        "create_contour": true,
+        "create_combined": true,
+        "show_stats_overlay": true,
+        "save_stats": true,
+        "min_valid_points": 100
+      }
+    }
+  },
+  "overall_stats": {
+    "total_subjects": 4,
+    "successful_subjects": 1,
+    "failed_subjects": 0,
+    "skipped_subjects": 3,
+    "success_rate": 25.0,
+    "heatmap_generation_enabled": true,
+    "heatmap_successes": 0,
+    "heatmap_success_rate": 0.0,
+    "total_gaze_points_analyzed": 0
+  },
+  "subject_results": [
+    {
+      "subject_name": "20231012T122519Z",
+      "subject_folder": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/raw/20231012T122519Z",
+      "output_paths": {
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/20231012T122519Z",
+        "corrected_video": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/20231012T122519Z/20231012T122519Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/20231012T122519Z/20231012T122519Z_gaze_output.csv",
+        "transformation_history": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/20231012T122519Z/20231012T122519Z_transformation_history.npy",
+        "final_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/20231012T122519Z/20231012T122519Z_final_gaze_data.csv",
+        "processing_log": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231012T122519Z_processing_log.txt",
+        "gaze_stats": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231012T122519Z_gaze_statistics.json",
+        "heatmap_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_heatmap.png",
+        "scatter_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_scatter.png",
+        "contour_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_contour.png",
+        "dashboard_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_dashboard.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 97.26628565788269,
+      "step1_stats": {
+        "total_frames": 10915,
+        "frames_with_markers": 4,
+        "frames_with_valid_homography": 0,
+        "frames_with_gaze": 0,
+        "transformation_history_length": 10915
+      },
+      "step2_stats": {
+        "success": true,
+        "input_gaze_samples": 43686,
+        "transformation_records": 10915,
+        "output_csv_records": 43686,
+        "valid_transformations": 0,
+        "invalid_transformations": 43686,
+        "valid_percentage": 0.0,
+        "output_csv_path": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/20231012T122519Z/20231012T122519Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": false,
+        "error": "No valid gaze points found"
+      }
+    },
+    {
+      "subject_name": "20231027T170020Z",
+      "status": "skipped",
+      "reason": "Outputs already exist",
+      "processing_time": 0
+    },
+    {
+      "subject_name": "20231027T171918Z",
+      "status": "skipped",
+      "reason": "Outputs already exist",
+      "processing_time": 0
+    },
+    {
+      "subject_name": "20231027TXXXXXXZ",
+      "status": "skipped",
+      "reason": "Outputs already exist",
+      "processing_time": 0
+    }
+  ]
+}

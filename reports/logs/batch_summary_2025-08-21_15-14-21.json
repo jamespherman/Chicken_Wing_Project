@@ -1,0 +1,324 @@
+{
+  "processing_session": {
+    "start_time": "2025-08-21T14:35:31.406341",
+    "end_time": "2025-08-21T15:14:21.870582",
+    "total_duration": 2330.4642419815063,
+    "config": {
+      "input_base_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/raw",
+      "output_base_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project",
+      "video_filename": "scenevideo.mp4",
+      "gaze_filename": "gazedata.gz",
+      "subject_folder_pattern": "*",
+      "output_width": 1000,
+      "target_markers": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "frame_width": 1920,
+      "frame_height": 1080,
+      "processing_options": {
+        "use_preselected_parameters": false,
+        "use_frame_preprocessing": false,
+        "use_outer_points": false,
+        "show_video": false
+      },
+      "skip_existing": true,
+      "create_summary_report": true,
+      "generate_heatmaps": true,
+      "heatmap_config": {
+        "figure_size": [
+          12,
+          8
+        ],
+        "dpi": 300,
+        "color_scheme": "viridis",
+        "heatmap_bins": 50,
+        "gaussian_sigma": 1.0,
+        "output_format": "png",
+        "create_heatmap": true,
+        "create_scatter": true,
+        "create_contour": true,
+        "create_combined": true,
+        "show_stats_overlay": true,
+        "save_stats": true,
+        "min_valid_points": 100
+      }
+    }
+  },
+  "overall_stats": {
+    "total_subjects": 4,
+    "successful_subjects": 4,
+    "failed_subjects": 0,
+    "skipped_subjects": 0,
+    "success_rate": 100.0,
+    "heatmap_generation_enabled": true,
+    "heatmap_successes": 3,
+    "heatmap_success_rate": 75.0,
+    "total_gaze_points_analyzed": 263037
+  },
+  "subject_results": [
+    {
+      "subject_name": "20231012T122519Z",
+      "subject_folder": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/raw/20231012T122519Z",
+      "output_paths": {
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z",
+        "corrected_video": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_gaze_output.csv",
+        "transformation_history": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_transformation_history.npy",
+        "final_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_final_gaze_data.csv",
+        "processing_log": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231012T122519Z_processing_log.txt",
+        "gaze_stats": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231012T122519Z_gaze_statistics.json",
+        "heatmap_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_heatmap.png",
+        "scatter_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_scatter.png",
+        "contour_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_contour.png",
+        "dashboard_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_dashboard.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 97.37783193588257,
+      "step1_stats": {
+        "total_frames": 10915,
+        "frames_with_markers": 4,
+        "frames_with_valid_homography": 0,
+        "frames_with_gaze": 0,
+        "transformation_history_length": 10915
+      },
+      "step2_stats": {
+        "success": true,
+        "input_gaze_samples": 43686,
+        "transformation_records": 10915,
+        "output_csv_records": 43686,
+        "valid_transformations": 0,
+        "invalid_transformations": 43686,
+        "valid_percentage": 0.0,
+        "output_csv_path": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": false,
+        "error": "No valid gaze points found"
+      }
+    },
+    {
+      "subject_name": "20231027T170020Z",
+      "subject_folder": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/raw/20231027T170020Z",
+      "output_paths": {
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z",
+        "corrected_video": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_gaze_output.csv",
+        "transformation_history": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_transformation_history.npy",
+        "final_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_final_gaze_data.csv",
+        "processing_log": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027T170020Z_processing_log.txt",
+        "gaze_stats": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027T170020Z_gaze_statistics.json",
+        "heatmap_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_heatmap.png",
+        "scatter_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_scatter.png",
+        "contour_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_contour.png",
+        "dashboard_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_dashboard.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 564.2264318466187,
+      "step1_stats": {
+        "total_frames": 18471,
+        "frames_with_markers": 16984,
+        "frames_with_valid_homography": 954,
+        "frames_with_gaze": 16695,
+        "transformation_history_length": 18471
+      },
+      "step2_stats": {
+        "success": true,
+        "input_gaze_samples": 73888,
+        "transformation_records": 18471,
+        "output_csv_records": 73888,
+        "valid_transformations": 71762,
+        "invalid_transformations": 2126,
+        "valid_percentage": 97.12267215244694,
+        "output_csv_path": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20231027T170020Z",
+        "input_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_final_gaze_data.csv",
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures",
+        "statistics": {
+          "original_samples": 73888,
+          "valid_samples": 71762,
+          "filtered_samples": 70338,
+          "valid_percentage": 97.12267215244694,
+          "filtered_percentage": 95.19543092247727,
+          "x_range": [
+            104.76492309570312,
+            655.7794799804688
+          ],
+          "y_range": [
+            -77.294921875,
+            792.5215454101562
+          ],
+          "x_mean": 491.3121997085151,
+          "y_mean": 167.87748462373344,
+          "x_std": 64.28928224809674,
+          "y_std": 122.72219754645725
+        },
+        "visualizations_created": [
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_heatmap.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_scatter.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_contour.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T170020Z_dashboard.png"
+        ]
+      }
+    },
+    {
+      "subject_name": "20231027T171918Z",
+      "subject_folder": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/raw/20231027T171918Z",
+      "output_paths": {
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T171918Z",
+        "corrected_video": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T171918Z/20231027T171918Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T171918Z/20231027T171918Z_gaze_output.csv",
+        "transformation_history": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T171918Z/20231027T171918Z_transformation_history.npy",
+        "final_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T171918Z/20231027T171918Z_final_gaze_data.csv",
+        "processing_log": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027T171918Z_processing_log.txt",
+        "gaze_stats": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027T171918Z_gaze_statistics.json",
+        "heatmap_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_heatmap.png",
+        "scatter_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_scatter.png",
+        "contour_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_contour.png",
+        "dashboard_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_dashboard.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 888.4348900318146,
+      "step1_stats": {
+        "total_frames": 28879,
+        "frames_with_markers": 25207,
+        "frames_with_valid_homography": 4745,
+        "frames_with_gaze": 26534,
+        "transformation_history_length": 28879
+      },
+      "step2_stats": {
+        "success": true,
+        "input_gaze_samples": 115602,
+        "transformation_records": 28879,
+        "output_csv_records": 115602,
+        "valid_transformations": 108348,
+        "invalid_transformations": 7254,
+        "valid_percentage": 93.7250220584419,
+        "output_csv_path": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T171918Z/20231027T171918Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20231027T171918Z",
+        "input_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T171918Z/20231027T171918Z_final_gaze_data.csv",
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures",
+        "statistics": {
+          "original_samples": 115602,
+          "valid_samples": 108348,
+          "filtered_samples": 106220,
+          "valid_percentage": 93.7250220584419,
+          "filtered_percentage": 91.88422345634159,
+          "x_range": [
+            284.4413757324219,
+            946.1051635742188
+          ],
+          "y_range": [
+            106.19684600830078,
+            670.8312377929688
+          ],
+          "x_mean": 589.5987860994046,
+          "y_mean": 280.82318414053526,
+          "x_std": 92.88512871410948,
+          "y_std": 81.00821692283493
+        },
+        "visualizations_created": [
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_heatmap.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_scatter.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_contour.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027T171918Z_dashboard.png"
+        ]
+      }
+    },
+    {
+      "subject_name": "20231027TXXXXXXZ",
+      "subject_folder": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/raw/20231027TXXXXXXZ",
+      "output_paths": {
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027TXXXXXXZ",
+        "corrected_video": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027TXXXXXXZ/20231027TXXXXXXZ_gaze_corrected_video.mp4",
+        "intermediate_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027TXXXXXXZ/20231027TXXXXXXZ_gaze_output.csv",
+        "transformation_history": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027TXXXXXXZ/20231027TXXXXXXZ_transformation_history.npy",
+        "final_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027TXXXXXXZ/20231027TXXXXXXZ_final_gaze_data.csv",
+        "processing_log": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027TXXXXXXZ_processing_log.txt",
+        "gaze_stats": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/logs/20231027TXXXXXXZ_gaze_statistics.json",
+        "heatmap_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_heatmap.png",
+        "scatter_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_scatter.png",
+        "contour_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_contour.png",
+        "dashboard_png": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_dashboard.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 780.0832669734955,
+      "step1_stats": {
+        "total_frames": 22262,
+        "frames_with_markers": 22013,
+        "frames_with_valid_homography": 1506,
+        "frames_with_gaze": 21982,
+        "transformation_history_length": 22262
+      },
+      "step2_stats": {
+        "success": true,
+        "input_gaze_samples": 88721,
+        "transformation_records": 22262,
+        "output_csv_records": 88721,
+        "valid_transformations": 88189,
+        "invalid_transformations": 532,
+        "valid_percentage": 99.40036744400987,
+        "output_csv_path": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027TXXXXXXZ/20231027TXXXXXXZ_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20231027TXXXXXXZ",
+        "input_csv": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027TXXXXXXZ/20231027TXXXXXXZ_final_gaze_data.csv",
+        "output_dir": "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures",
+        "statistics": {
+          "original_samples": 88721,
+          "valid_samples": 88189,
+          "filtered_samples": 86479,
+          "valid_percentage": 99.40036744400987,
+          "filtered_percentage": 97.47297708547018,
+          "x_range": [
+            395.0889587402344,
+            789.9078979492188
+          ],
+          "y_range": [
+            105.62564849853516,
+            699.977294921875
+          ],
+          "x_mean": 560.9727253663383,
+          "y_mean": 198.52171063848004,
+          "x_std": 70.82493398903617,
+          "y_std": 39.38735745092752
+        },
+        "visualizations_created": [
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_heatmap.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_scatter.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_contour.png",
+          "/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/reports/figures/20231027TXXXXXXZ_dashboard.png"
+        ]
+      }
+    }
+  ]
+}
