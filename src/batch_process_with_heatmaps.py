@@ -710,6 +710,9 @@ def main():
 
     # --- ENHANCED Configuration with Skip List ---
     config = {
+        # define base directory
+        'input_base_dir': input_dir,
+        
         # NEW: Skip List - Add known problematic subjects here
         'subjects_to_skip': [
             '20231012T122519Z',
