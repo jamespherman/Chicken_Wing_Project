@@ -10,6 +10,7 @@ import gzip
 import json
 import csv
 from tqdm import tqdm
+from utils import order_points
 
 
 ############################################
@@ -124,20 +125,6 @@ def transform_gaze_point(gaze_point, homography_matrix, frame_width, frame_heigh
     return int(transformed_x), int(transformed_y)
 
 
-def order_points(pts):
-    """
-    Order points as top-left, top-right, bottom-right, bottom-left.
-    """
-    rect = np.zeros((4, 2), dtype="float32")
-    s = pts.sum(axis=1)
-    rect[0] = pts[np.argmin(s)]  # Top-left
-    rect[2] = pts[np.argmax(s)]  # Bottom-right
-    diff = np.diff(pts, axis=1)
-    rect[1] = pts[np.argmin(diff)]  # Top-right
-    rect[3] = pts[np.argmax(diff)]  # Bottom-left
-    return rect
-
-
 def find_and_order_average_points(corners, ids, valid_ids):
     """
     Find and order average points from marker corners.
@@ -183,6 +170,7 @@ def process_gaze_with_perspective_correction(
     csv_output_path,
     transformation_history_path,
     output_width=1000,
+    output_height=606,
     target_markers=None,
     use_preselected_parameters=False,
     use_frame_preprocessing=False,
@@ -228,7 +216,6 @@ def process_gaze_with_perspective_correction(
     print(f"Video properties: {frame_width}x{frame_height}, {fps} FPS, {total_frames} frames")
     
     # Setup output video
-    output_height = int(output_width / 1.65)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_video_path, fourcc, fps, (output_width, output_height))
     
@@ -386,55 +373,3 @@ def process_gaze_with_perspective_correction(
     return stats
 
 
-############################################
-# Command line interface
-############################################
-
-def main():
-    """
-    Main function for command line execution with default settings.
-    """
-    
-    # Default file paths (adjust these to match your setup)
-    folder_path = '/Users/sachitanand/Lab_PatrickMayo/Projects/Surgical_OpenCV/20231027T174922Z_ChickenWing'
-    video_path = os.path.join(folder_path, 'scenevideo.mp4')
-    gaze_file_path = os.path.join(folder_path, "gazedata.gz")
-    
-    output_video_path = 'gaze_corrected_video_with_features.mp4'
-    csv_output_path = 'gaze_output.csv'
-    transformation_history_path = 'transformation_history.npy'
-    
-    # Processing toggles
-    use_preselected_parameters = False
-    use_frame_preprocessing = False
-    use_outer_points = False
-    show_video = True  # Set to False for headless processing
-    
-    try:
-        stats = process_gaze_with_perspective_correction(
-            video_path=video_path,
-            gaze_file_path=gaze_file_path,
-            output_video_path=output_video_path,
-            csv_output_path=csv_output_path,
-            transformation_history_path=transformation_history_path,
-            output_width=1000,
-            target_markers=[13, 14, 15, 16],
-            use_preselected_parameters=use_preselected_parameters,
-            use_frame_preprocessing=use_frame_preprocessing,
-            use_outer_points=use_outer_points,
-            show_video=show_video
-        )
-        
-        print("\n" + "="*60)
-        print("SUCCESS: Processing completed successfully!")
-        print("="*60)
-        return True
-        
-    except Exception as e:
-        print(f"\nERROR: Processing failed: {e}")
-        return False
-
-
-if __name__ == "__main__":
-    success = main()
-    exit(0 if success else 1)
