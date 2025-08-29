@@ -58,15 +58,21 @@ class EnhancedBatchProcessor:
         Args:
             config (dict): Configuration dictionary with processing parameters
         """
+        # --- Find project paths automatically ---
+        script_path = Path(__file__).resolve()
+        src_dir = script_path.parent
+        self.project_root = src_dir.parent
+
         # Default configuration
         self.config = {
-            'input_base_dir': '/Users/sachitanand/Lab_PatrickMayo/Projects/Surgical_OpenCV',
-            'output_base_dir': './batch_processing_results',
+            'input_base_dir': self.project_root / 'data' / 'raw',
+            'output_base_dir': self.project_root,
             'video_filename': 'scenevideo.mp4',
             'gaze_filename': 'gazedata.gz',
             'subject_folder_pattern': '*',
             'subjects_to_skip': [],
             'output_width': 1000,
+            'output_height': 606,
             'target_markers': [13, 14, 15, 16],
             'frame_width': 1920,
             'frame_height': 1080,
@@ -127,28 +133,24 @@ class EnhancedBatchProcessor:
         base_dir = Path(self.config['output_base_dir']).resolve()
         
         # Create main output directories with explicit paths
-        # FIXED: Use explicit directory structure
         self.output_root = base_dir
-        self.figures_dir = self.output_root / "reports" / "figures"
-        self.logs_dir = self.output_root / "reports" / "logs"
-        self.data_dir = self.output_root / "data" / "processed"
+        self.reports_dir = self.output_root / "reports"
+        self.data_dir = self.output_root / "data"
+
+        self.figures_dir = self.reports_dir / "figures"
+        self.logs_dir = self.reports_dir / "logs"
+        self.processed_data_dir = self.data_dir / "processed"
         
         # Create all directories
         self.figures_dir.mkdir(parents=True, exist_ok=True)
         self.logs_dir.mkdir(parents=True, exist_ok=True)
-        self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.processed_data_dir.mkdir(parents=True, exist_ok=True)
         
         print(f"Output directory structure created:")
         print(f"  Root: {self.output_root}")
-        print(f"  Processed Data: {self.data_dir}")
+        print(f"  Processed Data: {self.processed_data_dir}")
         print(f"  Figures: {self.figures_dir}")
         print(f"  Logs: {self.logs_dir}")
-        
-        # DEBUGGING: Print absolute paths to verify correct structure
-        print(f"\nAbsolute paths for verification:")
-        print(f"  Data dir: {self.data_dir.absolute()}")
-        print(f"  Figures dir: {self.figures_dir.absolute()}")
-        print(f"  Logs dir: {self.logs_dir.absolute()}")
     
     def _update_config(self, user_config):
         """
@@ -231,24 +233,17 @@ class EnhancedBatchProcessor:
         """
         subject_name = subject_folder.name
         
-        subject_data_dir = self.data_dir / subject_name
+        subject_data_dir = self.processed_data_dir / subject_name
         subject_data_dir.mkdir(parents=True, exist_ok=True)
         
-        # DEBUGGING: Print where subject data will be saved
-        print(f"Subject '{subject_name}' data will be saved to: {subject_data_dir.absolute()}")
-        
         outputs = {
-            'output_dir': subject_data_dir,  # Keep for compatibility
+            'output_dir': subject_data_dir,
             'corrected_video': subject_data_dir / f"{subject_name}_gaze_corrected_video.mp4",
             'intermediate_csv': subject_data_dir / f"{subject_name}_gaze_output.csv",
             'transformation_history': subject_data_dir / f"{subject_name}_transformation_history.npy",
             'final_csv': subject_data_dir / f"{subject_name}_final_gaze_data.csv",
-            
-            # Logs go to reports/logs/
             'processing_log': self.logs_dir / f"{subject_name}_processing_log.txt",
             'gaze_stats': self.logs_dir / f"{subject_name}_gaze_statistics.json",
-            
-            # Images go to reports/figures/
             'heatmap_png': self.figures_dir / f"{subject_name}_heatmap.png",
             'scatter_png': self.figures_dir / f"{subject_name}_scatter.png",
             'contour_png': self.figures_dir / f"{subject_name}_contour.png",
@@ -332,6 +327,7 @@ class EnhancedBatchProcessor:
                 csv_output_path=str(output_paths['intermediate_csv']),
                 transformation_history_path=str(output_paths['transformation_history']),
                 output_width=self.config['output_width'],
+                output_height=self.config['output_height'],
                 target_markers=self.config['target_markers'],
                 **self.config['processing_options']
             )
@@ -554,7 +550,7 @@ class EnhancedBatchProcessor:
                 f.write("-" * 40 + "\n")
                 f.write(f"All images (.png): {self.figures_dir}\n")
                 f.write(f"All logs (.txt, .json): {self.logs_dir}\n")
-                f.write(f"All processed data: {self.data_dir}\n\n")
+                f.write(f"All processed data: {self.processed_data_dir}\n\n")
                 
                 f.write("INDIVIDUAL RESULTS:\n")
                 f.write("-" * 40 + "\n")
@@ -662,7 +658,7 @@ class EnhancedBatchProcessor:
         print(f"Results organized in: {self.output_root}")
         print(f"  - Images: {self.figures_dir}")
         print(f"  - Logs: {self.logs_dir}")
-        print(f"  - Processed Data: {self.data_dir}")
+        print(f"  - Processed Data: {self.processed_data_dir}")
         
         return {
             'success': True,
@@ -714,12 +710,6 @@ def main():
 
     # --- ENHANCED Configuration with Skip List ---
     config = {
-        # Input: where to find the raw subject data
-        'input_base_dir': str(input_dir),  # Convert Path to string for consistency
-        
-        # Output: where to save all results - FIXED to use project root correctly
-        'output_base_dir': str(project_root),  # All outputs will be organized under project_root
-        
         # NEW: Skip List - Add known problematic subjects here
         'subjects_to_skip': [
             '20231012T122519Z',
@@ -728,8 +718,6 @@ def main():
         # Processing settings
         'subject_folder_pattern': '*',  # Match any folder
         'skip_existing': True,
-        'video_filename': 'scenevideo.mp4',
-        'gaze_filename': 'gazedata.gz',
         'generate_heatmaps': True,
         'create_summary_report': True,
         'heatmap_config': {
@@ -744,10 +732,10 @@ def main():
 
     print(f"\nConfiguration:")
     print(f"  Input (raw data): {config['input_base_dir']}")
-    print(f"  Output (results): {config['output_base_dir']}")
-    print(f"    -> Processed data will go to: {project_root}/data/processed/")
-    print(f"    -> Figures will go to: {project_root}/reports/figures/")
-    print(f"    -> Logs will go to: {project_root}/reports/logs/")
+    print(f"  Output (results):")
+    print(f"    - Processed data: {project_root}/data/processed/")
+    print(f"    - Figures: {project_root}/reports/figures/")
+    print(f"    - Logs: {project_root}/reports/logs/")
     
     # Show skip list information
     skip_list = config.get('subjects_to_skip', [])
