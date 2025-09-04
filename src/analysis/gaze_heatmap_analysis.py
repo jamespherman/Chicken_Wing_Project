@@ -377,22 +377,24 @@ class GazeHeatmapAnalyzer:
             FIXED_X_MIN, FIXED_X_MAX = 0, 1000
             FIXED_Y_MIN, FIXED_Y_MAX = 0, 606
             
-            # Set up the figure with custom grid layout (removed bottom row for stats)
-            fig = plt.figure(figsize=(12, 8), dpi=self.config['dpi'])
+            # Set up the figure with 2x3 grid layout
+            fig = plt.figure(figsize=(14, 8), dpi=self.config['dpi'])
             
-            # Create a simplified 2x2 grid layout: main plot with marginal density plots only
-            gs = fig.add_gridspec(2, 2,
-                                 width_ratios=[4, 1],
+            # Create a 2-row by 3-column grid layout
+            gs = fig.add_gridspec(2, 3,
+                                 width_ratios=[1, 4, 1],
                                  height_ratios=[1, 4],
-                                 hspace=0.02, wspace=0.02)
+                                 hspace=0.05, wspace=0.05)
             
-            # Define subplot positions with shared axes for perfect alignment
-            ax_main = fig.add_subplot(gs[1, 0])           # Main plot (bottom-left)
-            ax_top = fig.add_subplot(gs[0, 0], sharex=ax_main)    # Top marginal (X density)
-            ax_right = fig.add_subplot(gs[1, 1], sharey=ax_main)  # Right marginal (Y density)
+            # Create subplots in the specified positions with shared axes for perfect alignment
+            ax_main = fig.add_subplot(gs[1, 1])                    # Main plot (bottom-center)
+            ax_top = fig.add_subplot(gs[0, 1], sharex=ax_main)     # Top histogram (top-center)
+            ax_right = fig.add_subplot(gs[1, 2], sharey=ax_main)   # Right histogram (bottom-right)
+            ax_cbar = fig.add_subplot(gs[1, 0])                    # Colorbar (bottom-left)
             
-            # Hide unused corner
-            fig.add_subplot(gs[0, 1]).axis('off')    # Top-right corner
+            # Hide unused corners
+            fig.add_subplot(gs[0, 0]).axis('off')    # Top-left corner
+            fig.add_subplot(gs[0, 2]).axis('off')    # Top-right corner
             
             # Get data
             x = df['transformed_gaze_x'].values
@@ -402,7 +404,7 @@ class GazeHeatmapAnalyzer:
             ax_main.set_xlim(FIXED_X_MIN, FIXED_X_MAX)
             ax_main.set_ylim(FIXED_Y_MAX, FIXED_Y_MIN)  # Inverted for screen coordinates (Y=0 at top)
             
-            # Force equal aspect ratio to maintain 1000x606 proportions
+            # Force equal aspect ratio ONLY on the main plot to maintain 1000x606 proportions
             ax_main.set_aspect('equal', adjustable='box')
             
             # === CREATE HISTOGRAM DATA WITH FIXED BINS ===
@@ -474,11 +476,15 @@ class GazeHeatmapAnalyzer:
             ax_right.spines['right'].set_visible(False)
             ax_right.spines['top'].set_visible(False)
             
-            # === ADD COLORBAR (positioned to not interfere with alignment) ===
+            # === ADD COLORBAR IN DEDICATED SPACE ===
             if self.config['show_colorbar']:
-                # Create colorbar with careful positioning
-                cbar = plt.colorbar(im, ax=ax_main, shrink=0.8, pad=0.15)
+                # Create colorbar in its dedicated subplot space
+                cbar = plt.colorbar(im, cax=ax_cbar)
                 cbar.set_label('Gaze Density', fontsize=10)
+                cbar.ax.tick_params(labelsize=8)
+            else:
+                # Hide the colorbar axis if not needed
+                ax_cbar.axis('off')
             
             # === ADD MINIMAL STATISTICS AS TITLE ===
             # Calculate key statistics for title

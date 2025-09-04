@@ -1,0 +1,92 @@
+{
+  "processing_session": {
+    "start_time": "2025-08-29T14:47:09.148328",
+    "end_time": "2025-08-29T14:47:09.154329",
+    "total_duration": 0.006000995635986328,
+    "config": {
+      "input_base_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw",
+      "output_base_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project",
+      "video_filename": "scenevideo.mp4",
+      "gaze_filename": "gazedata.gz",
+      "subject_folder_pattern": "*",
+      "subjects_to_skip": [
+        "20231012T122519Z"
+      ],
+      "output_width": 1000,
+      "output_height": 606,
+      "target_markers": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "frame_width": 1920,
+      "frame_height": 1080,
+      "processing_options": {
+        "use_preselected_parameters": false,
+        "use_frame_preprocessing": false,
+        "use_outer_points": false,
+        "show_video": false
+      },
+      "skip_existing": true,
+      "create_summary_report": true,
+      "generate_heatmaps": true,
+      "heatmap_config": {
+        "figure_size": [
+          12,
+          8
+        ],
+        "dpi": 300,
+        "color_scheme": "viridis",
+        "heatmap_bins": 50,
+        "gaussian_sigma": 1.0,
+        "output_format": "png",
+        "create_heatmap": true,
+        "create_scatter": true,
+        "create_contour": true,
+        "create_combined": true,
+        "show_stats_overlay": true,
+        "save_stats": true,
+        "min_valid_points": 100
+      }
+    }
+  },
+  "overall_stats": {
+    "total_subjects": 3,
+    "successful_subjects": 0,
+    "failed_subjects": 0,
+    "skipped_subjects_skip_list": 1,
+    "skipped_subjects_output_exists": 3,
+    "total_skipped_subjects": 4,
+    "success_rate": 0.0,
+    "skip_list_enabled": true,
+    "skip_list_count": 1,
+    "skip_list_subjects": [
+      "20231012T122519Z"
+    ],
+    "heatmap_generation_enabled": true,
+    "heatmap_successes": 0,
+    "heatmap_success_rate": 0.0,
+    "total_gaze_points_analyzed": 0
+  },
+  "subject_results": [
+    {
+      "subject_name": "20231027T170020Z",
+      "status": "skipped",
+      "reason": "Outputs already exist",
+      "processing_time": 0
+    },
+    {
+      "subject_name": "20231027T171918Z",
+      "status": "skipped",
+      "reason": "Outputs already exist",
+      "processing_time": 0
+    },
+    {
+      "subject_name": "20231027TXXXXXXZ",
+      "status": "skipped",
+      "reason": "Outputs already exist",
+      "processing_time": 0
+    }
+  ]
+}
