@@ -1,6 +1,6 @@
-# Improvement Plan
+# Completed Improvements
 
-This document outlines the plan for improving the codebase, focusing on robustness, portability, configurability, and maintainability.
+This document lists the recent improvements that have been made to the codebase, focusing on robustness, portability, configurability, and maintainability.
 
 ## 1. Address Hardcoded Paths
 

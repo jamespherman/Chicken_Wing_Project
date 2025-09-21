@@ -4,6 +4,39 @@
 
 This project analyzes gaze data from a surgical simulation performed on a chicken wing model. It processes raw gaze data and scene video from Tobii Pro Glasses 3, using ArUco markers to correct for perspective changes. The output is a stabilized set of gaze coordinates mapped onto a consistent frame of reference, along with detailed visualizations for cognitive and performance analysis.
 
+## Dependencies
+
+This project requires Python 3 and the following packages:
+
+-   OpenCV
+-   NumPy
+-   tqdm
+-   Pandas
+-   Matplotlib
+-   Seaborn
+
+To install all the required dependencies, run the following command:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Configuration
+
+The main batch processing script, `src/batch_process_with_heatmaps.py`, can be configured by editing the `config` dictionary in the `main()` function at the bottom of the file.
+
+Key configuration options include:
+
+-   `subjects_to_skip`: A list of subject folder names to exclude from processing.
+-   `skip_existing`: If `True`, the script will skip subjects that already have processed output files.
+-   `generate_heatmaps`: If `True`, the script will generate heatmap visualizations.
+
+For more advanced options, see the `config` dictionary in the script.
+
+## Recent Improvements
+
+For a detailed list of recent improvements to the codebase, please see the `IMPROVEMENT_PLAN.md` file.
+
 ## Data Pipeline
 
 The data processing pipeline is designed to transform raw experimental data into actionable insights, including processed datasets and visual reports.
