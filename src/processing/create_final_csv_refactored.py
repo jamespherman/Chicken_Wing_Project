@@ -24,26 +24,24 @@ from ..logging_config import get_logger
 logger = get_logger(__name__)
 
 
-def load_gaze_data(gaze_file_path):
+def load_gaze_data_stream(gaze_file_path):
     """
-    Load and parse the raw gaze data from gazedata.gz file.
+    Load and parse the raw gaze data from gazedata.gz file as a stream.
     
     Args:
         gaze_file_path (str): Path to the gaze data file
         
-    Returns:
-        list: List of gaze samples with timestamps and gaze2d data
+    Yields:
+        dict: A single gaze sample from the file.
     """
-    logger.info(f"Loading gaze data from: {gaze_file_path}")
-    
+    logger.info(f"Streaming gaze data from: {gaze_file_path}")
     try:
         with gzip.open(gaze_file_path, 'rt') as f:
-            gaze_data = [json.loads(line) for line in f]
-        logger.info(f"Loaded {len(gaze_data)} gaze samples")
-        return gaze_data
+            for line in f:
+                yield json.loads(line)
     except Exception as e:
-        logger.error(f"Error loading gaze data: {e}")
-        return None
+        logger.error(f"Error streaming gaze data: {e}")
+        # An empty generator will be returned implicitly
 
 
 def load_transformation_history(history_file_path):
@@ -73,26 +71,20 @@ def load_transformation_history(history_file_path):
         return None
 
 
-def process_all_gaze_samples(gaze_data, transformation_history, frame_width=1920, frame_height=1080):
+def process_gaze_stream(gaze_data_stream, transformation_history, frame_width=1920, frame_height=1080):
     """
-    Process all gaze samples by merging with transformation history in a single pass.
+    Process a stream of gaze samples by merging with transformation history.
     
     Args:
-        gaze_data (list): Raw gaze data samples, sorted by timestamp.
+        gaze_data_stream (generator): A generator of raw gaze data samples, sorted by timestamp.
         transformation_history (numpy.ndarray): Transformation records, sorted by frame_time.
         frame_width (int): Original video frame width.
         frame_height (int): Original video frame height.
 
-    Returns:
-        list: Processed gaze data with transformations applied.
+    Yields:
+        dict: Processed gaze data records with transformations applied.
     """
-    
-    logger.info("Processing all gaze samples with optimized merge logic...")
-    
-    processed_data = []
-    
-    trans_hist_idx = 0
-    num_trans_hist = len(transformation_history)
+    logger.info("Processing gaze stream with optimized merge logic...")
 
     # Pre-filter transformation history to only include valid records
     valid_transformations = [rec for rec in transformation_history if rec['homography_matrix'] is not None]
@@ -100,104 +92,96 @@ def process_all_gaze_samples(gaze_data, transformation_history, frame_width=1920
 
     if num_valid_trans == 0:
         logger.warning("Warning: No valid transformations found in the history.")
-        # Process all gaze points without any transformation
-        for gaze_sample in tqdm(gaze_data, desc="Processing gaze samples (no valid transforms)"):
-            processed_data.append({
+        for gaze_sample in tqdm(gaze_data_stream, desc="Processing gaze samples (no valid transforms)"):
+            yield {
                 'gaze_timestamp': gaze_sample['timestamp'],
                 'transformed_gaze_x': np.nan,
                 'transformed_gaze_y': np.nan,
                 'active_frame_index': np.nan,
                 'active_frame_time': np.nan
-            })
-        return processed_data
-        
+            }
+        return
 
     trans_idx = 0
+    processed_count = 0
 
-    # Loop through all gaze samples
-    for gaze_sample in tqdm(gaze_data, desc="Processing gaze samples"):
+    # Loop through all gaze samples from the stream
+    for gaze_sample in tqdm(gaze_data_stream, desc="Processing gaze samples"):
         gaze_timestamp = gaze_sample['timestamp']
         
-        # Advance transformation index until we find the correct frame
-        # The correct frame is the one with the latest timestamp that is still
-        # less than or equal to the gaze timestamp.
         while (trans_idx + 1 < num_valid_trans and
                valid_transformations[trans_idx + 1]['frame_time'] <= gaze_timestamp):
             trans_idx += 1
 
         active_record = valid_transformations[trans_idx]
 
-        # Check if the current active_record is valid for this gaze_timestamp
         if active_record['frame_time'] <= gaze_timestamp:
             homography_matrix = active_record['homography_matrix']
             active_frame_index = active_record['frame_index']
             active_frame_time = active_record['frame_time']
         else:
-            # This gaze sample is earlier than the first valid transformation
             homography_matrix = None
             active_frame_index = None
             active_frame_time = None
         
-        # Extract gaze2d coordinates
         gaze_point = gaze_sample['data'].get('gaze2d', None)
         
-        # Transform the gaze point
         transformed_x, transformed_y = transform_gaze_point(
             gaze_point, homography_matrix, frame_width, frame_height
         )
         
-        # Create output record
-        processed_record = {
+        yield {
             'gaze_timestamp': gaze_timestamp,
             'transformed_gaze_x': transformed_x,
             'transformed_gaze_y': transformed_y,
             'active_frame_index': active_frame_index if active_frame_index is not None else np.nan,
             'active_frame_time': active_frame_time if active_frame_time is not None else np.nan
         }
-        
-        processed_data.append(processed_record)
+        processed_count += 1
 
-    logger.info(f"Processed {len(processed_data)} gaze samples")
-    return processed_data
+    logger.info(f"Finished processing stream. Total gaze samples processed: {processed_count}")
 
 
-def save_final_csv(processed_data, output_file_path):
+def save_stream_to_csv(processed_data_stream, output_file_path):
     """
-    Save the processed gaze data to a CSV file.
+    Save a stream of processed gaze data to a CSV file and calculate stats.
     
     Args:
-        processed_data (list): List of processed gaze records
-        output_file_path (str): Path for the output CSV file
+        processed_data_stream (generator): A generator of processed gaze records.
+        output_file_path (str): Path for the output CSV file.
         
     Returns:
-        dict: Statistics about the saved data
+        dict: Statistics about the saved data, or None on failure.
     """
-    
     logger.info(f"Saving final CSV to: {output_file_path}")
     
+    total_records = 0
+    valid_transformations = 0
+
     try:
-        # Define column order
         columns = ['gaze_timestamp', 'transformed_gaze_x', 'transformed_gaze_y',
-                  'active_frame_index', 'active_frame_time']
+                   'active_frame_index', 'active_frame_time']
         
-        # Write CSV file
         with open(output_file_path, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=columns)
             writer.writeheader()
-            writer.writerows(processed_data)
+
+            for record in tqdm(processed_data_stream, desc="Writing to CSV"):
+                writer.writerow(record)
+                total_records += 1
+                if not np.isnan(record['transformed_gaze_x']):
+                    valid_transformations += 1
         
-        logger.info(f"Successfully saved {len(processed_data)} records to {output_file_path}")
+        logger.info(f"Successfully saved {total_records} records to {output_file_path}")
         
-        # Calculate summary statistics
-        valid_transformations = sum(1 for record in processed_data
-                                  if not np.isnan(record['transformed_gaze_x']))
-        invalid_transformations = len(processed_data) - valid_transformations
+        invalid_transformations = total_records - valid_transformations
+        valid_percentage = (valid_transformations / total_records) * 100 if total_records > 0 else 0
         
         stats = {
-            'total_records': len(processed_data),
+            'total_records': total_records,
             'valid_transformations': valid_transformations,
             'invalid_transformations': invalid_transformations,
-            'valid_percentage': (valid_transformations / len(processed_data)) * 100 if processed_data else 0
+            'valid_percentage': valid_percentage
         }
         
         logger.info(f"Records with valid transformations: {valid_transformations}")
@@ -219,7 +203,7 @@ def create_final_gaze_csv(
     frame_height=1080
 ):
     """
-    Main function to create the final high-resolution gaze CSV file.
+    Main function to create the final high-resolution gaze CSV file using streaming.
     
     Args:
         gaze_file_path (str): Path to the gaze data file (.gz)
@@ -229,46 +213,39 @@ def create_final_gaze_csv(
         frame_height (int): Original video frame height
         
     Returns:
-        dict: Processing results and statistics
+        dict: Processing results and statistics, or None on failure.
     """
     
     logger.info("="*60)
-    logger.info("FINAL GAZE DATA CSV GENERATION")
+    logger.info("FINAL GAZE DATA CSV GENERATION (STREAMING)")
     logger.info("="*60)
     
-    # Step 1: Load input files
-    gaze_data = load_gaze_data(gaze_file_path)
-    if gaze_data is None:
-        logger.error("Failed to load gaze data. Exiting.")
-        return None
-    
+    # Step 1: Load transformation history (still in memory, assumed to be smaller)
     transformation_history = load_transformation_history(transformation_history_path)
     if transformation_history is None:
         logger.error("Failed to load transformation history. Exiting.")
         return None
-    
-    # Step 2: Process all gaze samples
-    processed_data = process_all_gaze_samples(
-        gaze_data, transformation_history, frame_width, frame_height
+
+    # Step 2: Create a stream for gaze data
+    gaze_data_stream = load_gaze_data_stream(gaze_file_path)
+
+    # Step 3: Process the stream of gaze samples
+    processed_data_stream = process_gaze_stream(
+        gaze_data_stream, transformation_history, frame_width, frame_height
     )
     
-    if not processed_data:
-        logger.warning("No data was processed. Exiting.")
-        return None
-    
-    # Step 3: Save final CSV
-    save_stats = save_final_csv(processed_data, output_csv_path)
+    # Step 4: Save the processed stream to CSV
+    save_stats = save_stream_to_csv(processed_data_stream, output_csv_path)
     
     if save_stats is None:
-        logger.error("Failed to save CSV file.")
+        logger.error("Failed to save CSV file. The process may have been interrupted or an error occurred.")
         return None
     
     # Compile final results
     results = {
         'success': True,
-        'input_gaze_samples': len(gaze_data),
         'transformation_records': len(transformation_history),
-        'output_csv_records': len(processed_data),
+        'output_csv_records': save_stats['total_records'],
         'valid_transformations': save_stats['valid_transformations'],
         'invalid_transformations': save_stats['invalid_transformations'],
         'valid_percentage': save_stats['valid_percentage'],
@@ -279,7 +256,6 @@ def create_final_gaze_csv(
     logger.info("\n" + "="*60)
     logger.info("PROCESSING COMPLETE!")
     logger.info("="*60)
-    logger.info(f"Input gaze samples: {results['input_gaze_samples']}")
     logger.info(f"Transformation records: {results['transformation_records']}")
     logger.info(f"Output CSV records: {results['output_csv_records']}")
     logger.info(f"Valid transformations: {results['valid_transformations']} ({results['valid_percentage']:.1f}%)")
