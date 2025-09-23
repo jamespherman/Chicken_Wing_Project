@@ -24,19 +24,11 @@ from datetime import datetime
 import json
 import traceback
 
-# --- Add subdirectories to the Python path ---
-# This allows the script to find the refactored modules
-# This gets the directory the script is in (the 'src' directory)
-src_dir = Path(__file__).resolve().parent
-# Add the 'processing' and 'analysis' subfolders to Python's search path
-sys.path.append(str(src_dir / 'processing'))
-sys.path.append(str(src_dir / 'analysis'))
-
 # Import the refactored processing functions
 try:
-    from gaze_on_perspective_corrected_frames_refactored import process_gaze_with_perspective_correction
-    from create_final_csv_refactored import create_final_gaze_csv
-    from gaze_heatmap_analysis import GazeHeatmapAnalyzer  # NEW!
+    from .processing.gaze_on_perspective_corrected_frames_refactored import process_gaze_with_perspective_correction
+    from .processing.create_final_csv_refactored import create_final_gaze_csv
+    from .analysis.gaze_heatmap_analysis import GazeHeatmapAnalyzer  # NEW!
 except ImportError as e:
     print(f"Error importing required modules: {e}")
     print("Make sure all required scripts are in the same directory:")
