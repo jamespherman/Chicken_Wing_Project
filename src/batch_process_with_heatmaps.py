@@ -28,13 +28,12 @@ import traceback
 try:
     from .processing.gaze_on_perspective_corrected_frames_refactored import process_gaze_with_perspective_correction
     from .processing.create_final_csv_refactored import create_final_gaze_csv
-    from .analysis.gaze_heatmap_analysis import GazeHeatmapAnalyzer  # NEW!
+    from .analysis.gaze_heatmap_analysis import GazeHeatmapAnalyzer
+    from .processing.batch_processing.subject_discovery import discover_subject_folders
+    from .processing.batch_processing.reporting import save_processing_log, create_summary_report
 except ImportError as e:
     print(f"Error importing required modules: {e}")
-    print("Make sure all required scripts are in the same directory:")
-    print("  - gaze_on_perspective_corrected_frames_refactored.py")
-    print("  - create_final_csv_refactored.py")
-    print("  - gaze_heatmap_analysis.py")
+    print("Please ensure all required modules are available.")
     sys.exit(1)
 
 
@@ -55,10 +54,45 @@ class EnhancedBatchProcessor:
         src_dir = script_path.parent
         self.project_root = src_dir.parent
 
-        # Default configuration
-        self.config = {
-            'input_base_dir': self.project_root / 'data' / 'raw',
-            'output_base_dir': self.project_root,
+        # Load base configuration from JSON file
+        self.config = self._load_base_config()
+
+        # Set dynamic paths
+        self.config['input_base_dir'] = self.project_root / self.config.get('input_base_dir', 'data/raw')
+        self.config['output_base_dir'] = self.project_root
+
+        # Update with user config if provided
+        if config:
+            self._update_config_recursive(self.config, config)
+
+        # Initialize tracking variables
+        self.results = []
+        self.start_time = None
+        self.total_subjects = 0
+        self.successful_subjects = 0
+        self.failed_subjects = 0
+        self.skipped_subjects = 0
+
+        # Create organized output directories
+        self._create_output_directories()
+
+        # Initialize heatmap analyzer
+        if self.config['generate_heatmaps']:
+            self.heatmap_analyzer = GazeHeatmapAnalyzer(self.config['heatmap_config'])
+        else:
+            self.heatmap_analyzer = None
+
+    def _load_base_config(self):
+        """
+        Load base configuration from config.json and provide sane defaults.
+        """
+        config_path = self.project_root / 'config.json'
+
+        with open(config_path, 'r') as f:
+            user_config = json.load(f)
+
+        # Start with sane defaults
+        default_config = {
             'video_filename': 'scenevideo.mp4',
             'gaze_filename': 'gazedata.gz',
             'subject_folder_pattern': '*',
@@ -76,46 +110,37 @@ class EnhancedBatchProcessor:
             },
             'skip_existing': True,
             'create_summary_report': True,
-            
-            # NEW: Heatmap analysis configuration
-            'generate_heatmaps': True,  # Enable/disable heatmap generation
+            'generate_heatmaps': True,
             'heatmap_config': {
                 'figure_size': (12, 8),
                 'dpi': 300,
-                'color_scheme': 'viridis',  # viridis, plasma, inferno, magma, hot
+                'color_scheme': 'viridis',
                 'heatmap_bins': 50,
                 'gaussian_sigma': 1.0,
                 'output_format': 'png',
                 'create_heatmap': True,
                 'create_scatter': True,
                 'create_contour': True,
-                'create_combined': True,  # Dashboard with all visualizations
+                'create_combined': True,
                 'show_stats_overlay': True,
                 'save_stats': True,
                 'min_valid_points': 100
             }
         }
         
-        # Update with user config if provided
-        if config:
-            self._update_config(config)
-        
-        # Initialize tracking variables
-        self.results = []
-        self.start_time = None
-        self.total_subjects = 0
-        self.successful_subjects = 0
-        self.failed_subjects = 0
-        self.skipped_subjects = 0
-        
-        # Create organized output directories
-        self._create_output_directories()
-        
-        # Initialize heatmap analyzer
-        if self.config['generate_heatmaps']:
-            self.heatmap_analyzer = GazeHeatmapAnalyzer(self.config['heatmap_config'])
-        else:
-            self.heatmap_analyzer = None
+        # Update defaults with user config
+        self._update_config_recursive(default_config, user_config)
+        return default_config
+
+    def _update_config_recursive(self, base_dict, new_dict):
+        """
+        Recursively update dictionary.
+        """
+        for key, value in new_dict.items():
+            if key in base_dict and isinstance(base_dict[key], dict) and isinstance(value, dict):
+                self._update_config_recursive(base_dict[key], value)
+            else:
+                base_dict[key] = value
     
     def _create_output_directories(self):
         """
@@ -157,61 +182,6 @@ class EnhancedBatchProcessor:
         
         update_dict(self.config, user_config)
     
-    def discover_subject_folders(self):
-        """
-        Discover subject folders in the input base directory, excluding those in the skip list.
-        
-        Returns:
-            list: List of valid subject folder paths (excluding skipped subjects)
-        """
-        input_path = Path(self.config['input_base_dir'])
-        
-        if not input_path.exists():
-            print(f"Input directory does not exist: {input_path}")
-            return []
-        
-        print(f"Scanning for subject folders in: {input_path}")
-        
-        # Get the skip list and convert to set for faster lookup
-        subjects_to_skip = set(self.config.get('subjects_to_skip', []))
-        if subjects_to_skip:
-            print(f"Skip list contains {len(subjects_to_skip)} subjects: {sorted(subjects_to_skip)}")
-        
-        pattern = self.config['subject_folder_pattern']
-        subject_folders = []
-        skipped_count = 0
-        
-        for folder_path in input_path.glob(pattern):
-            if folder_path.is_dir():
-                folder_name = folder_path.name
-                
-                if folder_name in subjects_to_skip:
-                    print(f"Skipping {folder_name}: Subject is in skip list")
-                    skipped_count += 1
-                    continue
-                
-                video_file = folder_path / self.config['video_filename']
-                gaze_file = folder_path / self.config['gaze_filename']
-                
-                if video_file.exists() and gaze_file.exists():
-                    subject_folders.append(folder_path)
-                    print(f"Found valid subject folder: {folder_path.name}")
-                else:
-                    missing_files = []
-                    if not video_file.exists():
-                        missing_files.append(self.config['video_filename'])
-                    if not gaze_file.exists():
-                        missing_files.append(self.config['gaze_filename'])
-                    print(f"Skipping {folder_path.name}: Missing {', '.join(missing_files)}")
-        
-        # Update the skipped count for reporting
-        self.skipped_subjects = skipped_count
-        
-        print(f"Found {len(subject_folders)} valid subject folders")
-        if skipped_count > 0:
-            print(f"Skipped {skipped_count} subjects due to skip list")
-        
-        return sorted(subject_folders)
     
     def create_output_paths(self, subject_folder):
         """
@@ -389,191 +359,9 @@ class EnhancedBatchProcessor:
         result['processing_time'] = time.time() - subject_start_time
         
         # Save processing log
-        self.save_processing_log(result, output_paths['processing_log'])
+        save_processing_log(result, output_paths['processing_log'])
         
         return result
-    
-    def save_processing_log(self, result, log_path):
-        """
-        Save enhanced processing log for a subject.
-        
-        Args:
-            result (dict): Processing result dictionary
-            log_path (Path): Path to save the log file
-        """
-        try:
-            with open(log_path, 'w') as f:
-                f.write(f"Enhanced Processing Log for {result['subject_name']}\n")
-                f.write(f"{'='*60}\n")
-                f.write(f"Processed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"Status: {result['status']}\n")
-                f.write(f"Processing time: {result['processing_time']:.2f} seconds\n\n")
-                
-                if result['error_message']:
-                    f.write(f"Error: {result['error_message']}\n\n")
-                
-                if result['step1_stats']:
-                    f.write("Step 1 - Video Processing Stats:\n")
-                    for key, value in result['step1_stats'].items():
-                        f.write(f"  {key}: {value}\n")
-                    f.write("\n")
-                
-                if result['step2_stats']:
-                    f.write("Step 2 - Final CSV Stats:\n")
-                    for key, value in result['step2_stats'].items():
-                        f.write(f"  {key}: {value}\n")
-                    f.write("\n")
-                
-                # Step 3 stats
-                if result['step3_stats']:
-                    f.write("Step 3 - Heatmap Analysis Stats:\n")
-                    stats = result['step3_stats']
-                    if stats.get('success'):
-                        f.write(f"  Visualizations created: {len(stats.get('visualizations_created', []))}\n")
-                        if 'statistics' in stats:
-                            gaze_stats = stats['statistics']
-                            f.write(f"  Valid gaze points: {gaze_stats.get('filtered_samples', 0):,}\n")
-                            f.write(f"  Data quality: {gaze_stats.get('filtered_percentage', 0):.1f}%\n")
-                    else:
-                        f.write(f"  Error: {stats.get('error', 'Unknown error')}\n")
-                    f.write("\n")
-                
-                f.write("Output Files:\n")
-                for key, path in result['output_paths'].items():
-                    exists = "Yes" if Path(path).exists() else "No"
-                    f.write(f"  {key}: {exists} {path}\n")
-        
-        except Exception as e:
-            print(f"Could not save processing log: {e}")
-    
-    def create_summary_report(self):
-        """
-        Create an enhanced summary report of all processed subjects with timestamps and skip list info.
-        """
-        if not self.config['create_summary_report']:
-            return
-        
-        print(f"\nCreating enhanced summary report...")
-        
-        # Create timestamped filenames
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        summary_json_path = self.logs_dir / f"batch_summary_{timestamp}.json"
-        summary_txt_path = self.logs_dir / f"batch_summary_{timestamp}.txt"
-        
-        # Calculate additional statistics
-        heatmap_successes = sum(1 for r in self.results
-                               if r.get('step3_stats', {}).get('success', False))
-        
-        total_gaze_points = sum(r.get('step3_stats', {}).get('statistics', {}).get('filtered_samples', 0)
-                               for r in self.results if r.get('step3_stats'))
-        
-        # Count different types of skipped subjects
-        output_exists_skipped = sum(1 for r in self.results
-                                   if r['status'] == 'skipped' and r.get('reason') == 'Outputs already exist')
-        
-        summary = {
-            'processing_session': {
-                'start_time': self.start_time.isoformat() if self.start_time else None,
-                'end_time': datetime.now().isoformat(),
-                'total_duration': time.time() - self.start_time.timestamp() if self.start_time else 0,
-                'config': self.config
-            },
-            'overall_stats': {
-                'total_subjects': self.total_subjects,
-                'successful_subjects': self.successful_subjects,
-                'failed_subjects': self.failed_subjects,
-                'skipped_subjects_skip_list': self.skipped_subjects,  # NEW: From skip list
-                'skipped_subjects_output_exists': output_exists_skipped,  # From existing outputs
-                'total_skipped_subjects': self.skipped_subjects + output_exists_skipped,
-                'success_rate': (self.successful_subjects / self.total_subjects * 100) if self.total_subjects > 0 else 0,
-                
-                # Skip list information
-                'skip_list_enabled': len(self.config.get('subjects_to_skip', [])) > 0,
-                'skip_list_count': len(self.config.get('subjects_to_skip', [])),
-                'skip_list_subjects': self.config.get('subjects_to_skip', []),
-                
-                # Heatmap-specific statistics
-                'heatmap_generation_enabled': self.config['generate_heatmaps'],
-                'heatmap_successes': heatmap_successes,
-                'heatmap_success_rate': (heatmap_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0,
-                'total_gaze_points_analyzed': total_gaze_points
-            },
-            'subject_results': self.results
-        }
-        
-        try:
-            # Save JSON summary
-            with open(summary_json_path, 'w') as f:
-                json.dump(summary, f, indent=2, default=str)
-            
-            print(f"Enhanced summary report saved to: {summary_json_path}")
-            
-            # Create enhanced text summary
-            with open(summary_txt_path, 'w') as f:
-                f.write("ENHANCED BATCH PROCESSING SUMMARY\n")
-                f.write("="*60 + "\n")
-                f.write(f"Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write("="*60 + "\n\n")
-                f.write(f"Total subjects discovered: {self.total_subjects + self.skipped_subjects}\n")
-                f.write(f"Subjects processed: {self.total_subjects}\n")
-                f.write(f"Successful (all steps): {self.successful_subjects}\n")
-                f.write(f"Failed: {self.failed_subjects}\n")
-                f.write(f"Skipped (skip list): {self.skipped_subjects}\n")
-                f.write(f"Skipped (existing outputs): {output_exists_skipped}\n")
-                f.write(f"Overall success rate: {summary['overall_stats']['success_rate']:.1f}%\n\n")
-                
-                # Skip list information
-                if self.skipped_subjects > 0:
-                    f.write("SKIP LIST INFORMATION:\n")
-                    f.write("-" * 40 + "\n")
-                    f.write(f"Skip list enabled: Yes\n")
-                    f.write(f"Subjects in skip list: {len(self.config.get('subjects_to_skip', []))}\n")
-                    skip_list = self.config.get('subjects_to_skip', [])
-                    if skip_list:
-                        f.write(f"Skip list contents: {', '.join(sorted(skip_list))}\n")
-                    f.write(f"Subjects actually skipped: {self.skipped_subjects}\n\n")
-                
-                if self.config['generate_heatmaps']:
-                    f.write(f"Heatmap visualizations created: {heatmap_successes}/{self.total_subjects}\n")
-                    f.write(f"Heatmap success rate: {summary['overall_stats']['heatmap_success_rate']:.1f}%\n")
-                    f.write(f"Total gaze points analyzed: {total_gaze_points:,}\n\n")
-                
-                f.write("OUTPUT DIRECTORY STRUCTURE:\n")
-                f.write("-" * 40 + "\n")
-                f.write(f"All images (.png): {self.figures_dir}\n")
-                f.write(f"All logs (.txt, .json): {self.logs_dir}\n")
-                f.write(f"All processed data: {self.processed_data_dir}\n\n")
-                
-                f.write("INDIVIDUAL RESULTS:\n")
-                f.write("-" * 40 + "\n")
-                for result in self.results:
-                    # More readable status icon assignment
-                    if result['status'] == 'success':
-                        status_icon = "✓"
-                    elif result['status'] == 'failed':
-                        status_icon = "✗"
-                    else:  # skipped or other status
-                        status_icon = "~"
-                    
-                    f.write(f"{status_icon} {result['subject_name']}: {result['status']}")
-                    
-                    if result['status'] == 'success':
-                        if result.get('step2_stats'):
-                            f.write(f" ({result['step2_stats']['valid_percentage']:.1f}% valid gaze)")
-                        
-                        if result.get('step3_stats', {}).get('success'):
-                            viz_count = len(result['step3_stats'].get('visualizations_created', []))
-                            f.write(f", {viz_count} visualizations")
-                    
-                    elif result['status'] == 'failed':
-                        f.write(f" - {result.get('error_message', 'Unknown error')}")
-                    
-                    f.write(f" ({result['processing_time']:.1f}s)\n")
-            
-            print(f"Enhanced text summary saved to: {summary_txt_path}")
-        
-        except Exception as e:
-            print(f"Could not save summary report: {e}")
     
     def run(self):
         """
@@ -599,7 +387,13 @@ class EnhancedBatchProcessor:
             print("Skip list: DISABLED")
         
         # Discover subject folders
-        subject_folders = self.discover_subject_folders()
+        subject_folders, self.skipped_subjects = discover_subject_folders(
+            self.config['input_base_dir'],
+            self.config['video_filename'],
+            self.config['gaze_filename'],
+            self.config['subject_folder_pattern'],
+            self.config['subjects_to_skip']
+        )
         
         if not subject_folders:
             print("No valid subject folders found. Exiting.")
@@ -623,7 +417,11 @@ class EnhancedBatchProcessor:
                 self.failed_subjects += 1
         
         # Create summary report
-        self.create_summary_report()
+        create_summary_report(
+            self.config, self.results, self.skipped_subjects, self.total_subjects,
+            self.successful_subjects, self.failed_subjects, self.start_time,
+            self.logs_dir, self.figures_dir, self.processed_data_dir
+        )
         
         # Calculate heatmap statistics
         heatmap_successes = sum(1 for r in self.results
@@ -681,65 +479,69 @@ def main():
     """
     Main function for command line execution.
     """
-    # --- Find project paths automatically ---
-    script_path = Path(__file__).resolve()
-    src_dir = script_path.parent
-    project_root = src_dir.parent
-
-    print(f"Script location: {script_path}")
-    print(f"Source directory: {src_dir}")
-    print(f"Project root: {project_root}")
-    
-    input_dir = project_root / 'data' / 'raw'
-    
-    # Verify the input directory exists
-    if not input_dir.exists():
-        print(f"ERROR: Input directory does not exist: {input_dir}")
-        print(f"Please ensure your raw data is in: {input_dir}")
-        return False
-    
-    print(f"Input directory confirmed: {input_dir}")
-
-    # --- ENHANCED Configuration with Skip List ---
-    config = {
-        # define base directory
-        'input_base_dir': input_dir,
-        
-        # NEW: Skip List - Add known problematic subjects here
-        'subjects_to_skip': [
-            '20231012T122519Z',
-        ],
-        
-        # Processing settings
-        'subject_folder_pattern': '*',  # Match any folder
-        'skip_existing': True,
-        'generate_heatmaps': True,
-        'create_summary_report': True,
-        'heatmap_config': {
-            'figure_size': (12, 8),
-            'dpi': 300,
-            'color_scheme': 'viridis'
-        },
-        'processing_options': {
-            'show_video': False
-        }
-    }
-
-    print(f"\nConfiguration:")
-    print(f"  Input (raw data): {config['input_base_dir']}")
-    print(f"  Output (results):")
-    print(f"    - Processed data: {project_root}/data/processed/")
-    print(f"    - Figures: {project_root}/reports/figures/")
-    print(f"    - Logs: {project_root}/reports/logs/")
-    
-    # Show skip list information
-    skip_list = config.get('subjects_to_skip', [])
-    if skip_list:
-        print(f"  Skip list: {len(skip_list)} subjects will be skipped: {skip_list}")
-    else:
-        print(f"  Skip list: No subjects to skip (empty list)")
-
     try:
+        # --- Find project paths automatically ---
+        script_path = Path(__file__).resolve()
+        src_dir = script_path.parent
+        project_root = src_dir.parent
+
+        print(f"Script location: {script_path}")
+        print(f"Source directory: {src_dir}")
+        print(f"Project root: {project_root}")
+
+        # Load configuration from file
+        config_path = project_root / 'config.json'
+        if not config_path.exists():
+            print(f"Configuration file not found at {config_path}. Creating a default one.")
+            default_config_data = {
+                "input_base_dir": "data/raw",
+                "subjects_to_skip": [],
+                "subject_folder_pattern": "*",
+                "skip_existing": True,
+                "generate_heatmaps": True,
+                "create_summary_report": True,
+                "heatmap_config": {
+                    "figure_size": [12, 8],
+                    "dpi": 300,
+                    "color_scheme": "viridis"
+                },
+                "processing_options": {
+                    "show_video": False
+                }
+            }
+            with open(config_path, 'w') as f:
+                json.dump(default_config_data, f, indent=4)
+            print(f"Default config.json created at {config_path}")
+
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+
+        # Set the input directory dynamically
+        input_dir = project_root / config.get('input_base_dir', 'data/raw')
+        config['input_base_dir'] = input_dir
+
+        # Verify the input directory exists
+        if not input_dir.exists():
+            print(f"ERROR: Input directory does not exist: {input_dir}")
+            print(f"Please ensure your raw data is in: {input_dir}")
+            return False
+        
+        print(f"Input directory confirmed: {input_dir}")
+
+        print(f"\nConfiguration loaded from: {config_path}")
+        print(f"  Input (raw data): {config['input_base_dir']}")
+        print(f"  Output (results):")
+        print(f"    - Processed data: {project_root}/data/processed/")
+        print(f"    - Figures: {project_root}/reports/figures/")
+        print(f"    - Logs: {project_root}/reports/logs/")
+
+        # Show skip list information
+        skip_list = config.get('subjects_to_skip', [])
+        if skip_list:
+            print(f"  Skip list: {len(skip_list)} subjects will be skipped: {skip_list}")
+        else:
+            print(f"  Skip list: No subjects to skip (empty list)")
+
         results = batch_process_subjects(config)
         
         if results and results.get('success'):
