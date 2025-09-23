@@ -18,5 +18,12 @@ This file lists potential optimizations and improvements for the Chicken Wing Su
 ## Low Priority
 
 - **[x] Streamline data loading:** For very large datasets, loading all data into memory at once can be inefficient. Investigate streaming or chunking data in the processing scripts to reduce memory usage.
-- **[ ] Use pandas for CSV writing:** In `src/processing/create_final_csv_refactored.py`, consider using the pandas library to write the final CSV, which can simplify the code.
-- **[ ] Update `README.md`:** The `README.md` file mentions a non-existent `IMPROVEMENT_PLAN.md` file. This should be removed or updated.
+- **[x] Use pandas for CSV writing:** In `src/processing/create_final_csv_refactored.py`, consider using the pandas library to write the final CSV, which can simplify the code.
+- **[x] Update `README.md`:** The `README.md` file mentions a non-existent `IMPROVEMENT_PLAN.md` file. This should be removed or updated.
+
+## Future Improvements
+
+- **[ ] Improve Test Coverage:** The current test suite (`src/test_batch_process.py`) is a high-level integration test that mocks the core processing functions. Add unit tests for the data processing logic in `src/processing/create_final_csv_refactored.py` and `src/processing/gaze_on_perspective_corrected_frames_refactored.py` to ensure correctness and prevent regressions.
+- **[ ] Externalize Frame Dimensions:** The `frame_width` and `frame_height` are hardcoded in `src/processing/create_final_csv_refactored.py`. Move these to the `config.json` file to make the pipeline more flexible for different video resolutions.
+- **[ ] Add Log Rotation/Cleanup:** The `reports/logs` directory accumulates log files from each run. Implement a log rotation or a cleanup strategy to manage the number of log files and save disk space.
+- **[ ] Parameterize data filenames:** The filenames for the scene video (`scenevideo.mp4`) and gaze data (`gazedata.gz`) are hardcoded in `src/batch_process_with_heatmaps.py`. These should be moved to `config.json` to allow for more flexibility in data naming conventions.

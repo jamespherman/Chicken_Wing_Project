@@ -33,10 +33,6 @@ Key configuration options include:
 
 For more advanced options, see the `config` dictionary in the script.
 
-## Recent Improvements
-
-For a detailed list of recent improvements to the codebase, please see the `IMPROVEMENT_PLAN.md` file.
-
 ## Data Pipeline
 
 The data processing pipeline is designed to transform raw experimental data into actionable insights, including processed datasets and visual reports.
