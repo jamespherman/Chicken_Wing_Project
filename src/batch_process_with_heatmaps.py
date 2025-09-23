@@ -24,6 +24,12 @@ from datetime import datetime
 import json
 import traceback
 
+from .logging_config import configure_logging, get_logger
+
+# Configure logging for the application
+logger = get_logger(__name__)
+
+
 # Import the refactored processing functions
 try:
     from .processing.gaze_on_perspective_corrected_frames_refactored import process_gaze_with_perspective_correction
@@ -32,8 +38,8 @@ try:
     from .processing.batch_processing.subject_discovery import discover_subject_folders
     from .processing.batch_processing.reporting import save_processing_log, create_summary_report
 except ImportError as e:
-    print(f"Error importing required modules: {e}")
-    print("Please ensure all required modules are available.")
+    logger.error(f"Error importing required modules: {e}")
+    logger.error("Please ensure all required modules are available.")
     sys.exit(1)
 
 
@@ -163,11 +169,11 @@ class EnhancedBatchProcessor:
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         self.processed_data_dir.mkdir(parents=True, exist_ok=True)
         
-        print(f"Output directory structure created:")
-        print(f"  Root: {self.output_root}")
-        print(f"  Processed Data: {self.processed_data_dir}")
-        print(f"  Figures: {self.figures_dir}")
-        print(f"  Logs: {self.logs_dir}")
+        logger.info(f"Output directory structure created:")
+        logger.info(f"  Root: {self.output_root}")
+        logger.info(f"  Processed Data: {self.processed_data_dir}")
+        logger.info(f"  Figures: {self.figures_dir}")
+        logger.info(f"  Logs: {self.logs_dir}")
     
     def _update_config(self, user_config):
         """
@@ -233,7 +239,7 @@ class EnhancedBatchProcessor:
         # Check if both CSV and main visualization exist
         if final_csv.exists():
             if not self.config['generate_heatmaps'] or dashboard_png.exists():
-                print(f"Skipping: Outputs already exist")
+                logger.info(f"Skipping: Outputs already exist")
                 return True
         
         return False
@@ -249,8 +255,8 @@ class EnhancedBatchProcessor:
             dict: Processing results for this subject
         """
         subject_name = subject_folder.name
-        print(f"\nProcessing subject: {subject_name}")
-        print(f"Subject folder: {subject_folder}")
+        logger.info(f"Processing subject: {subject_name}")
+        logger.info(f"Subject folder: {subject_folder}")
         
         # Create output paths
         output_paths = self.create_output_paths(subject_folder)
@@ -280,7 +286,7 @@ class EnhancedBatchProcessor:
         
         try:
             # Step 1: Process gaze with perspective correction
-            print(f"Step 1: Processing video with gaze data...")
+            logger.info(f"Step 1: Processing video with gaze data...")
             
             step1_stats = process_gaze_with_perspective_correction(
                 video_path=str(subject_folder / self.config['video_filename']),
@@ -295,10 +301,10 @@ class EnhancedBatchProcessor:
             )
             
             result['step1_stats'] = step1_stats
-            print(f"Step 1 completed: {step1_stats['frames_with_valid_homography']} frames with valid homography")
+            logger.info(f"Step 1 completed: {step1_stats['frames_with_valid_homography']} frames with valid homography")
             
             # Step 2: Create final high-resolution CSV
-            print(f"Step 2: Creating final high-resolution gaze CSV...")
+            logger.info(f"Step 2: Creating final high-resolution gaze CSV...")
             
             step2_stats = create_final_gaze_csv(
                 gaze_file_path=str(subject_folder / self.config['gaze_filename']),
@@ -310,15 +316,15 @@ class EnhancedBatchProcessor:
             
             if not step2_stats or not step2_stats.get('success', False):
                 result['error_message'] = "Step 2 failed: Could not create final CSV"
-                print(f"Step 2 failed: Could not create final CSV")
+                logger.error(f"Step 2 failed: Could not create final CSV")
                 return result
             
             result['step2_stats'] = step2_stats
-            print(f"Step 2 completed: {step2_stats['valid_transformations']} valid transformations ({step2_stats['valid_percentage']:.1f}%)")
+            logger.info(f"Step 2 completed: {step2_stats['valid_transformations']} valid transformations ({step2_stats['valid_percentage']:.1f}%)")
             
             # Step 3: Generate heatmap visualizations
             if self.config['generate_heatmaps'] and self.heatmap_analyzer:
-                print(f"Step 3: Generating gaze heatmap visualizations...")
+                logger.info(f"Step 3: Generating gaze heatmap visualizations...")
                 
                 # Configure the heatmap analyzer to use our organized directories
                 step3_stats = self.heatmap_analyzer.analyze_subject(
@@ -333,17 +339,17 @@ class EnhancedBatchProcessor:
                     try:
                         with open(stats_file, 'w') as f:
                             json.dump(step3_stats['statistics'], f, indent=2, default=str)
-                        print(f"Gaze statistics saved to: {stats_file}")
+                        logger.info(f"Gaze statistics saved to: {stats_file}")
                     except Exception as e:
-                        print(f"Warning: Could not save gaze statistics: {e}")
+                        logger.warning(f"Warning: Could not save gaze statistics: {e}")
                 
                 if step3_stats.get('success', False):
                     result['step3_stats'] = step3_stats
                     num_visualizations = len(step3_stats.get('visualizations_created', []))
                     valid_gaze_count = step3_stats.get('statistics', {}).get('filtered_samples', 0)
-                    print(f"Step 3 completed: {num_visualizations} visualizations created ({valid_gaze_count:,} gaze points)")
+                    logger.info(f"Step 3 completed: {num_visualizations} visualizations created ({valid_gaze_count:,} gaze points)")
                 else:
-                    print(f"Step 3 warning: {step3_stats.get('error', 'Could not create visualizations')}")
+                    logger.warning(f"Step 3 warning: {step3_stats.get('error', 'Could not create visualizations')}")
                     # Don't fail the entire process if only visualizations fail
                     result['step3_stats'] = step3_stats
             
@@ -352,8 +358,8 @@ class EnhancedBatchProcessor:
         
         except Exception as e:
             result['error_message'] = str(e)
-            print(f"Processing failed: {e}")
-            traceback.print_exc()
+            logger.error(f"Processing failed: {e}")
+            logger.exception("Traceback:")
         
         # Calculate processing time
         result['processing_time'] = time.time() - subject_start_time
@@ -371,20 +377,20 @@ class EnhancedBatchProcessor:
             dict: Overall processing results
         """
         self.start_time = datetime.now()
-        print("Starting enhanced batch processing with heatmap generation and skip list...")
-        print(f"Start time: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info("Starting enhanced batch processing with heatmap generation and skip list...")
+        logger.info(f"Start time: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         
         if self.config['generate_heatmaps']:
-            print("Heatmap generation: ENABLED")
+            logger.info("Heatmap generation: ENABLED")
         else:
-            print("Heatmap generation: DISABLED")
+            logger.info("Heatmap generation: DISABLED")
         
         # Show skip list information
         skip_list = self.config.get('subjects_to_skip', [])
         if skip_list:
-            print(f"Skip list: ENABLED ({len(skip_list)} subjects)")
+            logger.info(f"Skip list: ENABLED ({len(skip_list)} subjects)")
         else:
-            print("Skip list: DISABLED")
+            logger.info("Skip list: DISABLED")
         
         # Discover subject folders
         subject_folders, self.skipped_subjects = discover_subject_folders(
@@ -396,16 +402,16 @@ class EnhancedBatchProcessor:
         )
         
         if not subject_folders:
-            print("No valid subject folders found. Exiting.")
+            logger.warning("No valid subject folders found. Exiting.")
             return {'success': False, 'error': 'No valid subject folders found'}
         
         self.total_subjects = len(subject_folders)
         
         # Process each subject
         for i, subject_folder in enumerate(subject_folders, 1):
-            print(f"\n{'='*70}")
-            print(f"Processing subject {i}/{self.total_subjects}")
-            print(f"{'='*70}")
+            logger.info(f"\n{'='*70}")
+            logger.info(f"Processing subject {i}/{self.total_subjects}")
+            logger.info(f"{'='*70}")
             
             result = self.process_single_subject(subject_folder)
             self.results.append(result)
@@ -428,27 +434,27 @@ class EnhancedBatchProcessor:
                                if r.get('step3_stats', {}).get('success', False))
         
         # Print final summary
-        print(f"\nENHANCED BATCH PROCESSING COMPLETE!")
-        print(f"{'='*70}")
-        print(f"Total subjects discovered: {self.total_subjects + self.skipped_subjects}")
-        print(f"Subjects processed: {self.total_subjects}")
-        print(f"Successful: {self.successful_subjects}")
-        print(f"Failed: {self.failed_subjects}")
+        logger.info(f"ENHANCED BATCH PROCESSING COMPLETE!")
+        logger.info(f"{'='*70}")
+        logger.info(f"Total subjects discovered: {self.total_subjects + self.skipped_subjects}")
+        logger.info(f"Subjects processed: {self.total_subjects}")
+        logger.info(f"Successful: {self.successful_subjects}")
+        logger.info(f"Failed: {self.failed_subjects}")
         if self.skipped_subjects > 0:
-            print(f"Skipped (skip list): {self.skipped_subjects}")
+            logger.info(f"Skipped (skip list): {self.skipped_subjects}")
         skipped_existing = self.total_subjects - self.successful_subjects - self.failed_subjects
         if skipped_existing > 0:
-            print(f"Skipped (existing outputs): {skipped_existing}")
-        print(f"Success rate: {(self.successful_subjects / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%")
+            logger.info(f"Skipped (existing outputs): {skipped_existing}")
+        logger.info(f"Success rate: {(self.successful_subjects / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%")
         
         if self.config['generate_heatmaps']:
-            print(f"Heatmaps created: {heatmap_successes}/{self.total_subjects} ({(heatmap_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
+            logger.info(f"Heatmaps created: {heatmap_successes}/{self.total_subjects} ({(heatmap_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
         
-        print(f"Total time: {time.time() - self.start_time.timestamp():.1f} seconds")
-        print(f"Results organized in: {self.output_root}")
-        print(f"  - Images: {self.figures_dir}")
-        print(f"  - Logs: {self.logs_dir}")
-        print(f"  - Processed Data: {self.processed_data_dir}")
+        logger.info(f"Total time: {time.time() - self.start_time.timestamp():.1f} seconds")
+        logger.info(f"Results organized in: {self.output_root}")
+        logger.info(f"  - Images: {self.figures_dir}")
+        logger.info(f"  - Logs: {self.logs_dir}")
+        logger.info(f"  - Processed Data: {self.processed_data_dir}")
         
         return {
             'success': True,
@@ -485,14 +491,14 @@ def main():
         src_dir = script_path.parent
         project_root = src_dir.parent
 
-        print(f"Script location: {script_path}")
-        print(f"Source directory: {src_dir}")
-        print(f"Project root: {project_root}")
+        logger.info(f"Script location: {script_path}")
+        logger.info(f"Source directory: {src_dir}")
+        logger.info(f"Project root: {project_root}")
 
         # Load configuration from file
         config_path = project_root / 'config.json'
         if not config_path.exists():
-            print(f"Configuration file not found at {config_path}. Creating a default one.")
+            logger.warning(f"Configuration file not found at {config_path}. Creating a default one.")
             default_config_data = {
                 "input_base_dir": "data/raw",
                 "subjects_to_skip": [],
@@ -511,7 +517,7 @@ def main():
             }
             with open(config_path, 'w') as f:
                 json.dump(default_config_data, f, indent=4)
-            print(f"Default config.json created at {config_path}")
+            logger.info(f"Default config.json created at {config_path}")
 
         with open(config_path, 'r') as f:
             config = json.load(f)
@@ -522,38 +528,38 @@ def main():
 
         # Verify the input directory exists
         if not input_dir.exists():
-            print(f"ERROR: Input directory does not exist: {input_dir}")
-            print(f"Please ensure your raw data is in: {input_dir}")
+            logger.error(f"ERROR: Input directory does not exist: {input_dir}")
+            logger.error(f"Please ensure your raw data is in: {input_dir}")
             return False
         
-        print(f"Input directory confirmed: {input_dir}")
+        logger.info(f"Input directory confirmed: {input_dir}")
 
-        print(f"\nConfiguration loaded from: {config_path}")
-        print(f"  Input (raw data): {config['input_base_dir']}")
-        print(f"  Output (results):")
-        print(f"    - Processed data: {project_root}/data/processed/")
-        print(f"    - Figures: {project_root}/reports/figures/")
-        print(f"    - Logs: {project_root}/reports/logs/")
+        logger.info(f"Configuration loaded from: {config_path}")
+        logger.info(f"  Input (raw data): {config['input_base_dir']}")
+        logger.info(f"  Output (results):")
+        logger.info(f"    - Processed data: {project_root}/data/processed/")
+        logger.info(f"    - Figures: {project_root}/reports/figures/")
+        logger.info(f"    - Logs: {project_root}/reports/logs/")
 
         # Show skip list information
         skip_list = config.get('subjects_to_skip', [])
         if skip_list:
-            print(f"  Skip list: {len(skip_list)} subjects will be skipped: {skip_list}")
+            logger.info(f"  Skip list: {len(skip_list)} subjects will be skipped: {skip_list}")
         else:
-            print(f"  Skip list: No subjects to skip (empty list)")
+            logger.info(f"  Skip list: No subjects to skip (empty list)")
 
         results = batch_process_subjects(config)
         
         if results and results.get('success'):
-            print(f"\nEnhanced batch processing completed successfully!")
+            logger.info(f"Enhanced batch processing completed successfully!")
             return True
         else:
-            print(f"\nEnhanced batch processing failed or had issues.")
+            logger.warning(f"Enhanced batch processing failed or had issues.")
             return False
             
     except Exception as e:
-        print(f"\nAn unexpected error occurred in main: {e}")
-        traceback.print_exc()
+        logger.critical(f"An unexpected error occurred in main: {e}")
+        logger.exception("Traceback:")
         return False
 
 

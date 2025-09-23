@@ -10,9 +10,12 @@ import gzip
 import json
 import csv
 from tqdm import tqdm
-from .utils import order_points
+from .utils import order_points, transform_gaze_point
 import multiprocessing
 import math
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 ############################################
@@ -108,23 +111,6 @@ def extract_timestamps_and_gaze_positions(gaze_data):
         else:
             gaze_positions.append([np.nan, np.nan])
     return timestamps, gaze_positions
-
-
-def transform_gaze_point(gaze_point, homography_matrix, frame_width, frame_height):
-    """
-    Apply homography to gaze point.
-    """
-    if any(np.isnan(gaze_point)):
-        return None
-    
-    gaze_x = int(gaze_point[0] * frame_width)
-    gaze_y = int(gaze_point[1] * frame_height)
-    
-    original_point = np.array([[gaze_x, gaze_y]], dtype="float32")
-    transformed_point = cv2.perspectiveTransform(np.array([original_point]), homography_matrix)
-    
-    transformed_x, transformed_y = transformed_point[0][0]
-    return int(transformed_x), int(transformed_y)
 
 
 def find_and_order_average_points(corners, ids, valid_ids):
@@ -301,12 +287,12 @@ def process_gaze_with_perspective_correction(
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     cap.release()
     
-    print(f"Processing video: {video_path}")
-    print(f"Video properties: {frame_width}x{frame_height}, {fps:.2f} FPS, {total_frames} frames")
+    logger.info(f"Processing video: {video_path}")
+    logger.info(f"Video properties: {frame_width}x{frame_height}, {fps:.2f} FPS, {total_frames} frames")
     
     # --- Load gaze data (once) ---
     gaze_data = load_gaze_data(gaze_file_path)
-    print(f"Loaded {len(gaze_data)} gaze samples")
+    logger.info(f"Loaded {len(gaze_data)} gaze samples")
     
     # --- Parallel processing setup ---
     if num_workers is None:
@@ -315,7 +301,7 @@ def process_gaze_with_perspective_correction(
     chunk_size = math.ceil(total_frames / num_workers)
     chunks = [(i, i * chunk_size, min((i + 1) * chunk_size, total_frames)) for i in range(num_workers)]
     
-    print(f"Starting parallel processing with {num_workers} workers, {len(chunks)} chunks...")
+    logger.info(f"Starting parallel processing with {num_workers} workers, {len(chunks)} chunks...")
     
     # --- Prepare arguments for each worker ---
     processing_args = [
@@ -333,7 +319,7 @@ def process_gaze_with_perspective_correction(
     results.sort(key=lambda x: x[0])
 
     # --- Aggregate results ---
-    print("Aggregating results from all workers...")
+    logger.info("Aggregating results from all workers...")
     all_video_frames = []
     all_csv_data = []
     all_transformation_history = []
@@ -371,14 +357,14 @@ def process_gaze_with_perspective_correction(
     total_stats['transformation_history_length'] = len(all_transformation_history)
     
     # --- Final report ---
-    print("\nProcessing complete!")
-    print(f"Video saved to: {output_video_path}")
-    print(f"Gaze data saved to: {csv_output_path}")
-    print(f"Transformation history saved to: {transformation_history_path}")
-    print(f"Total frames processed: {total_stats['total_frames']}")
-    print(f"Frames with markers: {total_stats['frames_with_markers']}")
-    print(f"Frames with valid homography: {total_stats['frames_with_valid_homography']}")
-    print(f"Frames with gaze points: {total_stats['frames_with_gaze']}")
+    logger.info("Processing complete!")
+    logger.info(f"Video saved to: {output_video_path}")
+    logger.info(f"Gaze data saved to: {csv_output_path}")
+    logger.info(f"Transformation history saved to: {transformation_history_path}")
+    logger.info(f"Total frames processed: {total_stats['total_frames']}")
+    logger.info(f"Frames with markers: {total_stats['frames_with_markers']}")
+    logger.info(f"Frames with valid homography: {total_stats['frames_with_valid_homography']}")
+    logger.info(f"Frames with gaze points: {total_stats['frames_with_gaze']}")
 
     return total_stats
 

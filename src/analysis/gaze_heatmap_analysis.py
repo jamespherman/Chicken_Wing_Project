@@ -24,6 +24,9 @@ import json
 import traceback
 from scipy import stats
 from scipy.ndimage import gaussian_filter
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
@@ -97,11 +100,11 @@ class GazeHeatmapAnalyzer:
             if missing_cols:
                 raise ValueError(f"Missing required columns: {missing_cols}")
             
-            print(f"Loaded {len(df)} gaze samples from {Path(csv_path).name}")
+            logger.info(f"Loaded {len(df)} gaze samples from {Path(csv_path).name}")
             return df
             
         except Exception as e:
-            print(f"Error loading gaze data from {csv_path}: {e}")
+            logger.error(f"Error loading gaze data from {csv_path}: {e}")
             return None
     
     def filter_valid_gaze_data(self, df):
@@ -166,7 +169,7 @@ class GazeHeatmapAnalyzer:
             'y_std': valid_df['transformed_gaze_y'].std() if filtered_count > 0 else 0
         }
         
-        print(f"Valid gaze points: {filtered_count}/{original_count} ({stats['filtered_percentage']:.1f}%)")
+        logger.info(f"Valid gaze points: {filtered_count}/{original_count} ({stats['filtered_percentage']:.1f}%)")
         
         if filtered_count < self.config['min_valid_points']:
             return None, {'error': f'Insufficient valid points: {filtered_count} < {self.config["min_valid_points"]}'}
@@ -232,11 +235,11 @@ class GazeHeatmapAnalyzer:
             plt.savefig(output_path, dpi=self.config['dpi'], bbox_inches='tight')
             plt.close()
             
-            print(f"Saved heatmap: {output_path}")
+            logger.info(f"Saved heatmap: {output_path}")
             return True
             
         except Exception as e:
-            print(f"Error creating heatmap: {e}")
+            logger.error(f"Error creating heatmap: {e}")
             return False
     
     def create_scatter_visualization(self, df, subject_name, output_path):
@@ -287,11 +290,11 @@ class GazeHeatmapAnalyzer:
             plt.savefig(output_path, dpi=self.config['dpi'], bbox_inches='tight')
             plt.close()
             
-            print(f"Saved scatter plot: {output_path}")
+            logger.info(f"Saved scatter plot: {output_path}")
             return True
             
         except Exception as e:
-            print(f"Error creating scatter plot: {e}")
+            logger.error(f"Error creating scatter plot: {e}")
             return False
 
     def create_contour_visualization(self, df, subject_name, output_path):
@@ -353,11 +356,11 @@ class GazeHeatmapAnalyzer:
             plt.savefig(output_path, dpi=self.config['dpi'], bbox_inches='tight')
             plt.close()
             
-            print(f"Saved contour plot: {output_path}")
+            logger.info(f"Saved contour plot: {output_path}")
             return True
             
         except Exception as e:
-            print(f"Error creating contour plot: {e}")
+            logger.error(f"Error creating contour plot: {e}")
             return False
 
     def create_combined_visualization(self, df, subject_name, output_path):
@@ -510,13 +513,12 @@ class GazeHeatmapAnalyzer:
             plt.savefig(output_path, dpi=self.config['dpi'], bbox_inches='tight')
             plt.close()
             
-            print(f"Saved aligned dashboard: {output_path}")
+            logger.info(f"Saved aligned dashboard: {output_path}")
             return True
             
         except Exception as e:
-            print(f"Error creating combined visualization: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Error creating combined visualization: {e}")
+            logger.exception("Traceback:")
             return False
     
     def analyze_subject(self, csv_path, output_dir, subject_name=None):
@@ -538,9 +540,9 @@ class GazeHeatmapAnalyzer:
         if subject_name is None:
             subject_name = csv_path.stem.replace('_final_gaze_data', '')
         
-        print(f"\nAnalyzing gaze data for: {subject_name}")
-        print(f"Input CSV: {csv_path}")
-        print(f"Output directory: {output_dir}")
+        logger.info(f"Analyzing gaze data for: {subject_name}")
+        logger.info(f"Input CSV: {csv_path}")
+        logger.info(f"Output directory: {output_dir}")
         
         # Create output directory
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -593,9 +595,9 @@ class GazeHeatmapAnalyzer:
             try:
                 with open(stats_path, 'w') as f:
                     json.dump(stats, f, indent=2, default=str)
-                print(f"Saved statistics: {stats_path}")
+                logger.info(f"Saved statistics: {stats_path}")
             except Exception as e:
-                print(f"Could not save statistics: {e}")
+                logger.warning(f"Could not save statistics: {e}")
         
-        print(f"Analysis complete: {len(results['visualizations_created'])} visualizations created")
+        logger.info(f"Analysis complete: {len(results['visualizations_created'])} visualizations created")
         return results
