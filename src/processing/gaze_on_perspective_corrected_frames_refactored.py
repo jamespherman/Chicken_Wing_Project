@@ -248,7 +248,7 @@ def _process_frame_chunk(args):
                     if 0 <= tx < output_width and 0 <= ty < output_height:
                         transformed_gaze_x, transformed_gaze_y = tx, ty
                         stats['frames_with_gaze'] += 1
-                        cv2.circle(corrected_frame, (tx, ty), 15, (0, 0, 255), -1)
+                        cv2.circle(corrected_frame, (int(tx), int(ty)), 15, (0, 0, 255), -1)
 
             chunk_video_frames.append(corrected_frame)
         else:
