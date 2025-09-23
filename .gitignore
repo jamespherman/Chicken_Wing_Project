@@ -68,3 +68,7 @@ yarn-error.log*
 # ---------------
 *.tmp
 *.temp
+
+# Configuration files
+# -------------------
+config.json
