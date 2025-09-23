@@ -69,41 +69,6 @@ def load_transformation_history(history_file_path):
         return None
 
 
-def find_active_transformation(gaze_timestamp, transformation_history):
-    """
-    Find the active transformation matrix for a given gaze timestamp.
-    
-    Args:
-        gaze_timestamp (float): Timestamp of the gaze sample
-        transformation_history (numpy.ndarray): Array of transformation records
-    
-    Returns:
-        tuple: (homography_matrix, frame_index, frame_time) or (None, None, None)
-    """
-    
-    # Find the most recent frame_time that is <= gaze_timestamp
-    active_record = None
-    
-    for record in transformation_history:
-        frame_time = record['frame_time']
-        
-        # Check if this frame time is before or at the gaze timestamp
-        if frame_time <= gaze_timestamp:
-            active_record = record
-        else:
-            # Since transformation_history is ordered by frame_time,
-            # we can break once we find a frame_time > gaze_timestamp
-            break
-    
-    if active_record is not None:
-        return (active_record['homography_matrix'],
-                active_record['frame_index'],
-                active_record['frame_time'])
-    else:
-        # No frame found before this timestamp (very early gaze data)
-        return (None, None, None)
-
-
 def transform_gaze_point(gaze_point, homography_matrix, frame_width=1920, frame_height=1080):
     """
     Apply homography transformation to a gaze point.
@@ -145,38 +110,71 @@ def transform_gaze_point(gaze_point, homography_matrix, frame_width=1920, frame_
 
 def process_all_gaze_samples(gaze_data, transformation_history, frame_width=1920, frame_height=1080):
     """
-    Process all gaze samples and apply perspective corrections.
+    Process all gaze samples by merging with transformation history in a single pass.
     
     Args:
-        gaze_data (list): Raw gaze data samples
-        transformation_history (numpy.ndarray): Transformation history records
-        frame_width (int): Original video frame width
-        frame_height (int): Original video frame height
-    
+        gaze_data (list): Raw gaze data samples, sorted by timestamp.
+        transformation_history (numpy.ndarray): Transformation records, sorted by frame_time.
+        frame_width (int): Original video frame width.
+        frame_height (int): Original video frame height.
+
     Returns:
-        list: Processed gaze data with transformations applied
+        list: Processed gaze data with transformations applied.
     """
     
-    print("Processing all gaze samples...")
+    print("Processing all gaze samples with optimized merge logic...")
     
     processed_data = []
     
-    # Process each gaze sample
-    for i, gaze_sample in enumerate(tqdm(gaze_data, desc="Processing gaze samples")):
+    trans_hist_idx = 0
+    num_trans_hist = len(transformation_history)
+
+    # Pre-filter transformation history to only include valid records
+    valid_transformations = [rec for rec in transformation_history if rec['homography_matrix'] is not None]
+    num_valid_trans = len(valid_transformations)
+
+    if num_valid_trans == 0:
+        print("Warning: No valid transformations found in the history.")
+        # Process all gaze points without any transformation
+        for gaze_sample in tqdm(gaze_data, desc="Processing gaze samples (no valid transforms)"):
+            processed_data.append({
+                'gaze_timestamp': gaze_sample['timestamp'],
+                'transformed_gaze_x': np.nan,
+                'transformed_gaze_y': np.nan,
+                'active_frame_index': np.nan,
+                'active_frame_time': np.nan
+            })
+        return processed_data
         
-        # Extract timestamp and gaze coordinates
+
+    trans_idx = 0
+
+    # Loop through all gaze samples
+    for gaze_sample in tqdm(gaze_data, desc="Processing gaze samples"):
         gaze_timestamp = gaze_sample['timestamp']
         
-        # Extract gaze2d coordinates if available
-        if 'gaze2d' in gaze_sample['data']:
-            gaze_point = gaze_sample['data']['gaze2d']
+        # Advance transformation index until we find the correct frame
+        # The correct frame is the one with the latest timestamp that is still
+        # less than or equal to the gaze timestamp.
+        while (trans_idx + 1 < num_valid_trans and
+               valid_transformations[trans_idx + 1]['frame_time'] <= gaze_timestamp):
+            trans_idx += 1
+
+        active_record = valid_transformations[trans_idx]
+
+        # Check if the current active_record is valid for this gaze_timestamp
+        if active_record['frame_time'] <= gaze_timestamp:
+            homography_matrix = active_record['homography_matrix']
+            active_frame_index = active_record['frame_index']
+            active_frame_time = active_record['frame_time']
         else:
-            gaze_point = None
+            # This gaze sample is earlier than the first valid transformation
+            homography_matrix = None
+            active_frame_index = None
+            active_frame_time = None
         
-        # Find the active transformation for this timestamp
-        homography_matrix, active_frame_index, active_frame_time = find_active_transformation(
-            gaze_timestamp, transformation_history
-        )
+        # Extract gaze2d coordinates
+        gaze_point = gaze_sample['data'].get('gaze2d', None)
         
         # Transform the gaze point
         transformed_x, transformed_y = transform_gaze_point(
@@ -193,7 +191,7 @@ def process_all_gaze_samples(gaze_data, transformation_history, frame_width=1920
         }
         
         processed_data.append(processed_record)
-    
+
     print(f"Processed {len(processed_data)} gaze samples")
     return processed_data
 

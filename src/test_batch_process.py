@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from batch_process_with_heatmaps import main as batch_main
+from .batch_process_with_heatmaps import main as batch_main
 
 class TestBatchProcess(unittest.TestCase):
     @patch('builtins.print')
