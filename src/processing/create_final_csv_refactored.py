@@ -144,7 +144,8 @@ def process_gaze_stream(gaze_data_stream, transformation_history, frame_width=19
 
 def save_stream_to_csv(processed_data_stream, output_file_path):
     """
-    Save a stream of processed gaze data to a CSV file and calculate stats.
+    Save a stream of processed gaze data to a CSV file using pandas and calculate stats.
+    This function consumes the entire stream into memory to create a DataFrame.
     
     Args:
         processed_data_stream (generator): A generator of processed gaze records.
@@ -153,45 +154,52 @@ def save_stream_to_csv(processed_data_stream, output_file_path):
     Returns:
         dict: Statistics about the saved data, or None on failure.
     """
-    logger.info(f"Saving final CSV to: {output_file_path}")
-    
-    total_records = 0
-    valid_transformations = 0
+    logger.info(f"Saving final CSV to: {output_file_path}. Loading data into memory...")
 
     try:
-        columns = ['gaze_timestamp', 'transformed_gaze_x', 'transformed_gaze_y',
-                   'active_frame_index', 'active_frame_time']
+        # Consume the generator and load all data into a pandas DataFrame
+        df = pd.DataFrame(list(processed_data_stream))
         
-        with open(output_file_path, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=columns)
-            writer.writeheader()
+        if df.empty:
+            logger.warning("No data to save. The gaze data stream was empty.")
+            # Create an empty file with headers
+            pd.DataFrame(columns=[
+                'gaze_timestamp', 'transformed_gaze_x', 'transformed_gaze_y',
+                'active_frame_index', 'active_frame_time'
+            ]).to_csv(output_file_path, index=False)
 
-            for record in tqdm(processed_data_stream, desc="Writing to CSV"):
-                writer.writerow(record)
-                total_records += 1
-                if not np.isnan(record['transformed_gaze_x']):
-                    valid_transformations += 1
+            return {
+                'total_records': 0,
+                'valid_transformations': 0,
+                'invalid_transformations': 0,
+                'valid_percentage': 0
+            }
+
+        # Save the DataFrame to a CSV file
+        df.to_csv(output_file_path, index=False)
         
-        logger.info(f"Successfully saved {total_records} records to {output_file_path}")
-        
+        # Calculate statistics from the DataFrame
+        total_records = len(df)
+        valid_transformations = df['transformed_gaze_x'].notna().sum()
         invalid_transformations = total_records - valid_transformations
         valid_percentage = (valid_transformations / total_records) * 100 if total_records > 0 else 0
         
         stats = {
             'total_records': total_records,
-            'valid_transformations': valid_transformations,
-            'invalid_transformations': invalid_transformations,
+            'valid_transformations': int(valid_transformations),
+            'invalid_transformations': int(invalid_transformations),
             'valid_percentage': valid_percentage
         }
         
-        logger.info(f"Records with valid transformations: {valid_transformations}")
-        logger.info(f"Records with NaN transformations: {invalid_transformations}")
+        logger.info(f"Successfully saved {total_records} records to {output_file_path}")
+        logger.info(f"Records with valid transformations: {stats['valid_transformations']}")
+        logger.info(f"Records with NaN transformations: {stats['invalid_transformations']}")
         logger.info(f"Valid transformation percentage: {stats['valid_percentage']:.1f}%")
         
         return stats
         
     except Exception as e:
-        logger.error(f"Error saving CSV file: {e}")
+        logger.error(f"Error saving CSV file with pandas: {e}")
         return None
 
 
