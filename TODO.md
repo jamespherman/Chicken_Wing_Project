@@ -4,7 +4,7 @@ This file lists potential optimizations and improvements for the Chicken Wing Su
 
 ## High Priority
 
-- **[ ] Improve Test Coverage:** The current test suite (`src/test_batch_process.py`) is a high-level integration test that mocks the core processing functions. Add unit tests for the data processing logic in `src/processing/create_final_csv_refactored.py` and `src/processing/gaze_on_perspective_corrected_frames_refactored.py` to ensure correctness and prevent regressions.
+- **[x] Improve Test Coverage:** The current test suite (`src/test_batch_process.py`) is a high-level integration test that mocks the core processing functions. Add unit tests for the data processing logic in `src/processing/create_final_csv_refactored.py` and `src/processing/gaze_on_perspective_corrected_frames_refactored.py` to ensure correctness and prevent regressions.
 
 ## Medium Priority
 
