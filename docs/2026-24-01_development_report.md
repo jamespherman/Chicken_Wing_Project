@@ -248,7 +248,12 @@ For each subject in `reports/logs/`:
 
 ## Known Limitations
 
-1. **ArUco Marker Detection:** The transformation history shows 0 valid homographies for all subjects, indicating ArUco marker detection is not working for this dataset. The gaze position cannot be transformed to workspace coordinates. However, all physics-based metrics (angular velocity, pupil, IMU) are still extracted successfully.
+1. **ArUco Marker Availability:** ArUco marker detection is working correctly for subjects with visible markers:
+   - **Subject 20231012T122519Z:** No ArUco markers present in video (0% valid homographies). This subject was on the skip list in previous batch runs for this reason. Analysis is limited to physics-only metrics.
+   - **Subject 20231027T170020Z:** ArUco detection working correctly (97.7% valid homographies, markers 15 & 16 detected)
+   - **Subject 20231027T171918Z:** ArUco detection working correctly (97.7% valid homographies, markers 13, 14, 15 & 16 detected)
+
+   The pipeline gracefully handles subjects without markers by extracting physics-based metrics (angular velocity, pupil, IMU) even when gaze position transformation is unavailable.
 
 2. **Goal D (Visual Strategy):** Not executed as it requires video processing at each gaze point. Can be enabled by setting `include_goal_d: true` in configuration.
 
@@ -258,10 +263,10 @@ For each subject in `reports/logs/`:
 
 ## Recommendations for Next Steps
 
-1. **Fix ArUco Detection:** Investigate why ArUco markers are not being detected. May need:
-   - Different marker dictionary
-   - Adjusted detection parameters
-   - Pre-processing of video frames
+1. **Subject Validation:** For new subjects, verify ArUco marker presence before processing:
+   - Run marker scan diagnostic to confirm target markers [13, 14, 15, 16] are visible
+   - Subjects without visible markers should be added to `subjects_to_skip` in config.json
+   - Consider alternative calibration methods for marker-less subjects
 
 2. **Collect More Data:** Add task timestamps and more subjects to enable:
    - Task-segmented analysis
