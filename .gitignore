@@ -72,3 +72,6 @@ yarn-error.log*
 # Configuration files
 # -------------------
 config.json
+*.csv
+*.csv
+*.csv

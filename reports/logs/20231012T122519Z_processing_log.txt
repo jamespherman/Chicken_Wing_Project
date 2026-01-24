@@ -1,20 +1,44 @@
 Enhanced Processing Log for 20231012T122519Z
 ============================================================
-Processed at: 2025-09-23 12:19:05
-Status: failed
-Processing time: 0.01 seconds
+Processed at: 2026-01-24 14:24:45
+Status: success
+Processing time: 104.89 seconds
 
-Error: Error: Unable to open video file at /app/data/raw/20231012T122519Z/recording.g3
+Step 1 - Video Processing Stats:
+  total_frames: 4095
+  frames_with_markers: 2
+  frames_with_valid_homography: 0
+  frames_with_gaze: 0
+  transformation_history_length: 4095
+
+Step 2 - Final CSV Stats:
+  success: True
+  transformation_records: 4095
+  imu_records: 55918
+  luminance_frames: 10915
+  output_csv_records: 43686
+  valid_transformations: 0
+  invalid_transformations: 43686
+  valid_percentage: 0.0
+  valid_angular_velocity: 0
+  valid_pupil: 0
+  valid_imu: 0
+  output_csv_path: /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_final_gaze_data.csv
+  frame_dimensions: (1920, 1080)
+
+Step 3 - Heatmap Analysis Stats:
+  Error: No valid gaze points found
 
 Output Files:
-  output_dir: Yes /app/data/processed/20231012T122519Z
-  corrected_video: No /app/data/processed/20231012T122519Z/20231012T122519Z_gaze_corrected_video.mp4
-  intermediate_csv: Yes /app/data/processed/20231012T122519Z/20231012T122519Z_gaze_output.csv
-  transformation_history: Yes /app/data/processed/20231012T122519Z/20231012T122519Z_transformation_history.npy
-  final_csv: Yes /app/data/processed/20231012T122519Z/20231012T122519Z_final_gaze_data.csv
-  processing_log: Yes /app/reports/logs/20231012T122519Z_processing_log.txt
-  gaze_stats: No /app/reports/logs/20231012T122519Z_gaze_statistics.json
-  heatmap_png: No /app/reports/figures/20231012T122519Z_heatmap.png
-  scatter_png: No /app/reports/figures/20231012T122519Z_scatter.png
-  contour_png: No /app/reports/figures/20231012T122519Z_contour.png
-  dashboard_png: No /app/reports/figures/20231012T122519Z_dashboard.png
+  output_dir: Yes /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z
+  corrected_video: Yes /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_gaze_corrected_video.mp4
+  intermediate_csv: Yes /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_gaze_output.csv
+  transformation_history: Yes /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_transformation_history.npy
+  final_csv: Yes /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_final_gaze_data.csv
+  processing_log: Yes /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/reports/logs/20231012T122519Z_processing_log.txt
+  gaze_stats: No /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/reports/logs/20231012T122519Z_gaze_statistics.json
+  whole_session_analysis: Yes /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/reports/logs/20231012T122519Z_whole_session_analysis.json
+  heatmap_png: No /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_heatmap.png
+  scatter_png: No /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_scatter.png
+  contour_png: No /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_contour.png
+  dashboard_png: No /Users/jph/Library/CloudStorage/OneDrive-UniversityofPittsburgh/SurgicalCognition/Chicken_Wing_Project/reports/figures/20231012T122519Z_dashboard.png
