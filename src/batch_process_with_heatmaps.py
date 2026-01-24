@@ -35,6 +35,7 @@ try:
     from .processing.gaze_on_perspective_corrected_frames_refactored import process_gaze_with_perspective_correction
     from .processing.create_final_csv_refactored import create_final_gaze_csv
     from .analysis.gaze_heatmap_analysis import GazeHeatmapAnalyzer
+    from .analysis.whole_session_analysis import WholeSessionAnalyzer
     from .processing.batch_processing.subject_discovery import discover_subject_folders
     from .processing.batch_processing.reporting import save_processing_log, create_summary_report
 except ImportError as e:
@@ -131,6 +132,10 @@ class EnhancedBatchProcessor:
                 'show_stats_overlay': True,
                 'save_stats': True,
                 'min_valid_points': 100
+            },
+            'run_whole_session_analysis': True,
+            'whole_session_config': {
+                'include_goal_d': False  # Visual strategy requires video processing
             }
         }
         
@@ -212,6 +217,7 @@ class EnhancedBatchProcessor:
             'final_csv': subject_data_dir / f"{subject_name}_final_gaze_data.csv",
             'processing_log': self.logs_dir / f"{subject_name}_processing_log.txt",
             'gaze_stats': self.logs_dir / f"{subject_name}_gaze_statistics.json",
+            'whole_session_analysis': self.logs_dir / f"{subject_name}_whole_session_analysis.json",
             'heatmap_png': self.figures_dir / f"{subject_name}_heatmap.png",
             'scatter_png': self.figures_dir / f"{subject_name}_scatter.png",
             'contour_png': self.figures_dir / f"{subject_name}_contour.png",
@@ -281,7 +287,8 @@ class EnhancedBatchProcessor:
             'processing_time': 0,
             'step1_stats': None,
             'step2_stats': None,
-            'step3_stats': None  # NEW: Heatmap analysis stats
+            'step3_stats': None,  # Heatmap analysis stats
+            'step4_stats': None   # Whole-session analysis stats
         }
         
         try:
@@ -352,7 +359,59 @@ class EnhancedBatchProcessor:
                     logger.warning(f"Step 3 warning: {step3_stats.get('error', 'Could not create visualizations')}")
                     # Don't fail the entire process if only visualizations fail
                     result['step3_stats'] = step3_stats
-            
+
+            # Step 4: Whole-Session Analysis (Physics-based metrics)
+            if self.config.get('run_whole_session_analysis', True):
+                logger.info(f"Step 4: Running whole-session analysis...")
+
+                try:
+                    analyzer = WholeSessionAnalyzer()
+                    ws_config = self.config.get('whole_session_config', {})
+
+                    step4_stats = analyzer.run_complete_analysis(
+                        csv_path=str(output_paths['final_csv']),
+                        video_path=str(subject_folder / self.config['video_filename']),
+                        include_goal_d=ws_config.get('include_goal_d', False)
+                    )
+
+                    # Save analysis results to JSON
+                    analysis_file = output_paths['whole_session_analysis']
+                    with open(analysis_file, 'w') as f:
+                        # Convert any numpy types to Python types for JSON
+                        def convert_to_serializable(obj):
+                            if isinstance(obj, dict):
+                                return {k: convert_to_serializable(v) for k, v in obj.items()}
+                            elif isinstance(obj, (list, tuple)):
+                                return [convert_to_serializable(i) for i in obj]
+                            elif hasattr(obj, 'item'):  # numpy scalar
+                                return obj.item()
+                            elif obj is None or isinstance(obj, (int, float, str, bool)):
+                                return obj
+                            else:
+                                return str(obj)
+
+                        json.dump(convert_to_serializable(step4_stats), f, indent=2)
+
+                    result['step4_stats'] = step4_stats
+                    logger.info(f"Step 4 completed: Whole-session analysis saved")
+                    logger.info(f"  Recording duration: {step4_stats.get('recording_duration_s', 0):.1f} s")
+
+                    # Log key metrics
+                    goal_a = step4_stats.get('goal_a_oculometric_efficiency', {})
+                    goal_b = step4_stats.get('goal_b_cognitive_load', {})
+                    goal_c = step4_stats.get('goal_c_motor_stability', {})
+
+                    if goal_a:
+                        logger.info(f"  Fixation rate: {goal_a.get('fixation_rate_hz', 0):.2f} Hz")
+                    if goal_b:
+                        logger.info(f"  Pupil residual: {goal_b.get('mean_residual', 0):.4f} mm")
+                    if goal_c:
+                        logger.info(f"  Total head rotation: {goal_c.get('total_rotation_deg', 0):.1f} deg")
+
+                except Exception as e:
+                    logger.warning(f"Step 4 warning: Could not complete whole-session analysis: {e}")
+                    result['step4_stats'] = {'error': str(e)}
+
             # Mark as successful if we got through at least steps 1 and 2
             result['status'] = 'success'
         
@@ -432,7 +491,11 @@ class EnhancedBatchProcessor:
         # Calculate heatmap statistics
         heatmap_successes = sum(1 for r in self.results
                                if r.get('step3_stats', {}).get('success', False))
-        
+
+        # Calculate whole-session analysis statistics
+        ws_successes = sum(1 for r in self.results
+                          if r.get('step4_stats') and not r.get('step4_stats', {}).get('error'))
+
         # Print final summary
         logger.info(f"ENHANCED BATCH PROCESSING COMPLETE!")
         logger.info(f"{'='*70}")
@@ -446,9 +509,12 @@ class EnhancedBatchProcessor:
         if skipped_existing > 0:
             logger.info(f"Skipped (existing outputs): {skipped_existing}")
         logger.info(f"Success rate: {(self.successful_subjects / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%")
-        
+
         if self.config['generate_heatmaps']:
             logger.info(f"Heatmaps created: {heatmap_successes}/{self.total_subjects} ({(heatmap_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
+
+        if self.config.get('run_whole_session_analysis', True):
+            logger.info(f"Whole-session analysis: {ws_successes}/{self.total_subjects} ({(ws_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
         
         logger.info(f"Total time: {time.time() - self.start_time.timestamp():.1f} seconds")
         logger.info(f"Results organized in: {self.output_root}")
@@ -463,6 +529,7 @@ class EnhancedBatchProcessor:
             'failed_subjects': self.failed_subjects,
             'skipped_subjects_skip_list': self.skipped_subjects,
             'heatmap_successes': heatmap_successes,
+            'whole_session_successes': ws_successes,
             'results': self.results
         }
 

@@ -1,0 +1,42 @@
+{
+  "goal_a_oculometric_efficiency": {
+    "fixation_rate_hz": 8.105488063858278,
+    "fixation_count": 6000,
+    "fixation_proportion": 0.7428353076041269,
+    "mean_fixation_duration_ms": 90.94668050000085,
+    "saccade_count": 870,
+    "saccade_proportion": 0.020607020033844643,
+    "total_duration_s": 740.2392,
+    "total_samples": 73276
+  },
+  "goal_b_cognitive_load": {
+    "mean_residual": 2.534752938248455e-17,
+    "std_residual": 0.1941188416580117,
+    "regression_r_squared": 0.005527417856172319,
+    "regression_slope": 0.004518163842234975,
+    "regression_intercept": 3.1645737492161894,
+    "regression_p_value": 1.7053796964556768e-88,
+    "raw_pupil_mean": 3.4937217259831117,
+    "raw_pupil_std": 0.19465756397287357,
+    "luminance_mean": 72.84994264486532,
+    "luminance_std": 3.203099701877392,
+    "n_samples": 71762
+  },
+  "goal_c_motor_stability": {
+    "total_rotation_deg": 9795.318949401018,
+    "mean_rotation_rate": 13.234992405539835,
+    "rotation_rate_std": 15.234053894616487,
+    "rotation_rate_max": 270.99444998849685,
+    "gyro_x_mean": 11.236198362714468,
+    "gyro_x_std": 11.508888784099405,
+    "gyro_y_mean": 4.620291571636774,
+    "gyro_y_std": 12.388157767234365,
+    "gyro_z_mean": 1.7285627003417119,
+    "gyro_z_std": 4.755831080746048,
+    "total_duration_s": 740.249225,
+    "n_samples": 73123,
+    "rotation_rate_per_second": 13.232460931520757
+  },
+  "goal_d_visual_strategy": null,
+  "recording_duration_s": 740.2392
+}

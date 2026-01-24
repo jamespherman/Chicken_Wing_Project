@@ -18,10 +18,13 @@ class IVTEventClassifier:
     """
     Velocity-Threshold Identification (I-VT) Algorithm
     Classifies gaze samples into fixations, saccades, and other events.
-    
+
     Reference: Hosp et al., 2021
+
+    Updated to support precomputed angular velocity from 3D gaze direction vectors
+    (Physics Update) for more accurate physiological measurements.
     """
-    
+
     def __init__(self, fixation_threshold=30, saccade_threshold=300):
         """
         Args:
@@ -30,15 +33,19 @@ class IVTEventClassifier:
         """
         self.fixation_threshold = fixation_threshold
         self.saccade_threshold = saccade_threshold
-    
+
     def calculate_velocity(self, x: np.ndarray, y: np.ndarray, t: np.ndarray) -> np.ndarray:
         """
         Calculate angular velocity between consecutive gaze samples.
-        
+
+        Note: This method calculates velocity from x/y coordinates. For more
+        accurate physics-based angular velocity, use precomputed values from
+        3D gaze direction vectors via classify_events_with_precomputed_velocity().
+
         Args:
             x, y: Gaze coordinates (should be in degrees of visual angle)
             t: Timestamps (in seconds)
-            
+
         Returns:
             velocities: Angular velocity in degrees/second
         """
@@ -46,39 +53,50 @@ class IVTEventClassifier:
         dx = np.diff(x)
         dy = np.diff(y)
         dt = np.diff(t)
-        
+
         # Avoid division by zero and negative time steps
         dt = np.maximum(dt, 1e-6)
-        
+
         # Calculate Euclidean distance and velocity
         distance = np.sqrt(dx**2 + dy**2)
         velocity = distance / dt
-        
+
         # Pad with zero for first sample
         velocity = np.concatenate([[0], velocity])
-        
+
         return velocity
-    
-    def classify_events(self, x: np.ndarray, y: np.ndarray, t: np.ndarray) -> pd.DataFrame:
+
+    def classify_events(self, x: np.ndarray, y: np.ndarray, t: np.ndarray,
+                       precomputed_velocity: np.ndarray = None) -> pd.DataFrame:
         """
         Classify each gaze sample into FIXATION, SACCADE, or OTHER.
-        
+
         Args:
             x, y: Gaze coordinates
             t: Timestamps
-            
+            precomputed_velocity: Optional precomputed angular velocity (deg/s)
+                                  from 3D gaze direction vectors. If provided,
+                                  uses this instead of calculating from x/y.
+
         Returns:
             DataFrame with columns: x, y, t, velocity, gaze_state
         """
-        velocity = self.calculate_velocity(x, y, t)
-        
+        if precomputed_velocity is not None:
+            # Use precomputed angular velocity (Physics Update)
+            velocity = np.array(precomputed_velocity)
+            # Handle NaN values - treat as OTHER
+            velocity = np.nan_to_num(velocity, nan=self.fixation_threshold + 1)
+        else:
+            # Calculate velocity from x/y coordinates (legacy method)
+            velocity = self.calculate_velocity(x, y, t)
+
         # Classify based on velocity thresholds
         gaze_state = np.empty(len(velocity), dtype=object)
         gaze_state[velocity < self.fixation_threshold] = 'FIXATION'
         gaze_state[velocity >= self.saccade_threshold] = 'SACCADE'
         gaze_state[(velocity >= self.fixation_threshold) &
                    (velocity < self.saccade_threshold)] = 'OTHER'
-        
+
         df = pd.DataFrame({
             'x': x,
             'y': y,
@@ -86,8 +104,41 @@ class IVTEventClassifier:
             'velocity': velocity,
             'gaze_state': gaze_state
         })
-        
+
         return df
+
+    def classify_from_dataframe(self, df: pd.DataFrame,
+                                x_col: str = 'transformed_gaze_x',
+                                y_col: str = 'transformed_gaze_y',
+                                t_col: str = 'gaze_timestamp',
+                                velocity_col: str = 'angular_velocity_deg_s') -> pd.DataFrame:
+        """
+        Classify events directly from an enhanced gaze DataFrame.
+
+        This method is designed to work with the enhanced final_gaze_data.csv
+        that includes precomputed angular velocity.
+
+        Args:
+            df: DataFrame with gaze data
+            x_col: Name of x coordinate column
+            y_col: Name of y coordinate column
+            t_col: Name of timestamp column
+            velocity_col: Name of precomputed velocity column (if present)
+
+        Returns:
+            DataFrame with classified gaze events
+        """
+        # Check if precomputed velocity is available
+        precomputed = None
+        if velocity_col in df.columns:
+            precomputed = df[velocity_col].values
+
+        return self.classify_events(
+            df[x_col].values,
+            df[y_col].values,
+            df[t_col].values,
+            precomputed_velocity=precomputed
+        )
 
 
 class OculometricFeatureExtractor:
@@ -298,14 +349,20 @@ class SurgicalSkillAnalyzer:
     """
     Complete analysis pipeline for surgical skill assessment via oculometrics.
     Implements the 4-step workflow from the analysis plan.
+
+    Updated to support whole-session analysis mode when task timestamps
+    are not available, using recording duration as performance proxy.
     """
-    
-    def __init__(self, task_timestamps_path: str):
+
+    def __init__(self, task_timestamps_path: str = None):
         """
         Args:
-            task_timestamps_path: Path to task_timestamps.csv lookup file
+            task_timestamps_path: Path to task_timestamps.csv lookup file.
+                                  Optional for whole-session analysis mode.
         """
-        self.task_timestamps = pd.read_csv(task_timestamps_path)
+        self.task_timestamps = None
+        if task_timestamps_path:
+            self.task_timestamps = pd.read_csv(task_timestamps_path)
         self.ivt_classifier = IVTEventClassifier()
         self.results = []
     
@@ -571,5 +628,71 @@ class SurgicalSkillAnalyzer:
                          f"p={row['spearman_p']:.4f} {sig}")
         
         report.append("\n" + "=" * 80)
-        
+
         return "\n".join(report)
+
+    def analyze_whole_session(self, gaze_df: pd.DataFrame,
+                              subject_id: str) -> Dict[str, any]:
+        """
+        Analyze an entire recording session without task segmentation.
+
+        This mode is used when task-specific timestamps are not available.
+        Uses recording duration as a performance proxy.
+
+        Args:
+            gaze_df: DataFrame with enhanced gaze data including:
+                     - gaze_timestamp
+                     - transformed_gaze_x, transformed_gaze_y
+                     - angular_velocity_deg_s (precomputed)
+            subject_id: Subject identifier
+
+        Returns:
+            Dictionary with subject_id, recording_duration, and all features
+        """
+        # Filter valid data
+        valid_mask = (
+            gaze_df['transformed_gaze_x'].notna() &
+            gaze_df['transformed_gaze_y'].notna()
+        )
+        valid_data = gaze_df[valid_mask].copy()
+
+        if len(valid_data) < 100:
+            return {
+                'subject_id': subject_id,
+                'recording_duration': 0,
+                'error': 'Insufficient valid data'
+            }
+
+        # Calculate recording duration
+        recording_duration = (
+            valid_data['gaze_timestamp'].max() -
+            valid_data['gaze_timestamp'].min()
+        )
+
+        # Use precomputed angular velocity if available
+        precomputed_velocity = None
+        if 'angular_velocity_deg_s' in valid_data.columns:
+            precomputed_velocity = valid_data['angular_velocity_deg_s'].values
+
+        # Classify events using I-VT
+        classified = self.ivt_classifier.classify_events(
+            valid_data['transformed_gaze_x'].values,
+            valid_data['transformed_gaze_y'].values,
+            valid_data['gaze_timestamp'].values,
+            precomputed_velocity=precomputed_velocity
+        )
+
+        # Extract features
+        extractor = OculometricFeatureExtractor(classified)
+        features = extractor.extract_all_features()
+
+        # Compile results
+        result = {
+            'subject_id': subject_id,
+            'recording_duration': recording_duration,
+            'total_samples': len(valid_data),
+            **features
+        }
+
+        self.results.append(result)
+        return result
