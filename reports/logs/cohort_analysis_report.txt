@@ -1,0 +1,83 @@
+======================================================================
+COHORT ANALYSIS REPORT
+Generated: 2026-02-01 08:13:35
+======================================================================
+
+SUBJECTS: 14
+METRICS: 35
+TOTAL RECORDING TIME: 2.73 hours
+MEAN DURATION: 701.1 s (11.7 min)
+
+----------------------------------------------------------------------
+GOAL A: OCULOMETRIC EFFICIENCY
+----------------------------------------------------------------------
+  Fixation Rate: 5.38 +/- 1.80 Hz (range: 2.59 - 8.11)
+  Mean Fixation Duration: 169.80 +/- 80.12 ms (range: 61.61 - 331.19)
+  Valid Saccade Count: 821.07 +/- 542.82 (range: 25.00 - 1761.00)
+  Adaptive Threshold: 29.86 +/- 34.88 deg/s (range: 9.50 - 146.43)
+  Saccade Amplitude: 2.97 +/- 1.80 deg (range: 1.78 - 8.97)
+  Main Sequence R²: 0.76 +/- 0.06 (range: 0.60 - 0.84)
+
+----------------------------------------------------------------------
+GOAL B: COGNITIVE LOAD (Pupil Analysis)
+----------------------------------------------------------------------
+  Pupil Residual Std: 0.2501 +/- 0.0762 mm (range: 0.1519 - 0.3942)
+  Raw Pupil Mean: 3.5986 +/- 0.5091 mm (range: 2.9048 - 4.4298)
+  R² Instantaneous: 0.0358 +/- 0.0579 (range: 0.0001 - 0.1896)
+  R² Convolved: 0.0483 +/- 0.0767 (range: 0.0001 - 0.2285)
+  R² Improvement: 0.0125 +/- 0.0639 (range: -0.0388 - 0.2280)
+
+  PLR Temporal Kernel (per-subject fitted):
+    t_max (time to peak): 684.7 +/- 281.2 ms (range: 400.0 - 1200.0)
+    n (shape parameter): 7.9 +/- 3.5 (range: 3.0 - 12.0)
+
+----------------------------------------------------------------------
+GOAL C: MOTOR STABILITY (Head Movement)
+----------------------------------------------------------------------
+  Total Head Rotation: 6333.1 +/- 4658.6 deg (range: 0.0 - 16199.6)
+  Mean Rotation Rate: 10.4 +/- 6.2 deg/s (range: 0.0 - 27.2)
+  Normalized Rate: 10.3 +/- 6.2 deg/s (range: 0.0 - 27.2)
+
+----------------------------------------------------------------------
+OUTLIER SUBJECTS (>1.5 IQR)
+----------------------------------------------------------------------
+  fixation_proportion: 20251029T131758Z
+  mean_fixation_duration_ms: 20251029T135859Z
+  total_duration_s: 20251029T131758Z
+  adaptive_threshold_deg_s: 20251029T131758Z
+  saccade_amplitude_mean_deg: 20251029T131758Z
+  saccade_peak_velocity_mean_deg_s: 20251029T131758Z
+  saccade_peak_velocity_max_deg_s: 20251029T180021Z, 20251029T183522Z
+  main_sequence_r_squared: 20251029T131758Z
+  mean_residual: 20251029T131758Z
+  regression_r_squared: 20231027T171918Z, 20251029T125515Z
+  regression_r_squared_convolved: 20231027T171918Z, 20251029T125515Z, 20251029T131758Z
+  regression_slope: 20251029T125515Z
+  r_squared_improvement: 20251029T131758Z, 20251029T143149Z
+  r_squared_improvement_pct: 20251029T131758Z, 20251029T131831Z, 20251029T164000Z
+  luminance_mean: 20231027T174922Z, 20231027TXXXXXXZ
+  mean_rotation_rate: 20251029T131758Z
+  rotation_rate_max: 20231027TXXXXXXZ, 20251029T183522Z
+  gyro_y_mean: 20231027TXXXXXXZ, 20251029T131758Z
+  gyro_z_mean: 20251029T131758Z
+  rotation_rate_per_second: 20251029T131758Z
+
+----------------------------------------------------------------------
+SUBJECTS INCLUDED
+----------------------------------------------------------------------
+   1. 20231027T170020Z (740s)
+   2. 20231027T171918Z (1158s)
+   3. 20231027T174922Z (893s)
+   4. 20231027TXXXXXXZ (893s)
+   5. 20251029T125515Z (1273s)
+   6. 20251029T131758Z (22s)
+   7. 20251029T131831Z (786s)
+   8. 20251029T135859Z (593s)
+   9. 20251029T143149Z (596s)
+  10. 20251029T164000Z (1178s)
+  11. 20251029T172913Z (532s)
+  12. 20251029T180021Z (294s)
+  13. 20251029T183522Z (613s)
+  14. 20251029T192809Z (245s)
+
+======================================================================

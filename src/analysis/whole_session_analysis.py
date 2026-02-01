@@ -24,6 +24,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from ..logging_config import get_logger
+from .adaptive_saccade_detector import AdaptiveSaccadeDetector, SaccadeEvent
+from .pupil_luminance_kernel import PupilLuminanceKernel
 
 logger = get_logger(__name__)
 
@@ -38,7 +40,7 @@ class WholeSessionAnalyzer:
 
     # I-VT velocity thresholds (degrees/second)
     FIXATION_THRESHOLD = 30.0    # Below this = fixation
-    SACCADE_THRESHOLD = 300.0    # Above this = saccade
+    # Note: SACCADE_THRESHOLD is now computed adaptively using MAD-based detection
 
     def __init__(self, csv_path: str = None, video_path: str = None):
         """
@@ -52,6 +54,27 @@ class WholeSessionAnalyzer:
         self.video_path = video_path
         self.data = None
         self.metrics = {}
+
+        # Raw data storage for visualizations
+        self.fixation_durations = []      # ms
+        self.saccade_amplitudes = []      # degrees
+        self.saccade_peak_velocities = [] # deg/s
+        self.saccade_events = []          # List[SaccadeEvent]
+        self.pupil_residuals = None       # np.ndarray
+        self.pupil_timestamps = None      # np.ndarray
+        self.gyro_magnitude = None        # np.ndarray
+        self.gyro_timestamps = None       # np.ndarray
+        self.gyro_x = None                # np.ndarray (pitch)
+        self.gyro_y = None                # np.ndarray (yaw)
+
+        # Saccade detection
+        self.saccade_detector = AdaptiveSaccadeDetector()
+        self.adaptive_threshold = None    # Computed saccade threshold
+
+        # Pupil-luminance kernel analysis
+        self.kernel_model = None          # PupilLuminanceKernel instance
+        self.convolved_luminance = None   # np.ndarray for visualization
+        self.pupil_predicted = None       # np.ndarray (from convolved regression)
 
     def load_data(self, csv_path: str = None) -> pd.DataFrame:
         """
@@ -116,22 +139,27 @@ class WholeSessionAnalyzer:
         velocities = valid_data['angular_velocity_deg_s'].values
         timestamps = valid_data['gaze_timestamp'].values
 
-        # Classify states
+        # First, detect saccades using adaptive MAD threshold
+        # This populates self.adaptive_threshold
+        self._calculate_saccade_events(None, timestamps, velocities, valid_data)
+
+        # Use adaptive threshold for state classification
+        saccade_threshold = self.adaptive_threshold if self.adaptive_threshold else 200.0
+
+        # Classify states using adaptive threshold
         states = np.empty(len(velocities), dtype=object)
         states[velocities < self.FIXATION_THRESHOLD] = 'FIXATION'
-        states[velocities >= self.SACCADE_THRESHOLD] = 'SACCADE'
+        states[velocities >= saccade_threshold] = 'SACCADE'
         states[(velocities >= self.FIXATION_THRESHOLD) &
-               (velocities < self.SACCADE_THRESHOLD)] = 'OTHER'
+               (velocities < saccade_threshold)] = 'OTHER'
 
         # Count fixation events (transitions into fixation state)
         fixation_starts = (states == 'FIXATION') & (np.roll(states, 1) != 'FIXATION')
         fixation_starts[0] = states[0] == 'FIXATION'  # Handle first sample
         fixation_count = fixation_starts.sum()
 
-        # Count saccade events
-        saccade_starts = (states == 'SACCADE') & (np.roll(states, 1) != 'SACCADE')
-        saccade_starts[0] = states[0] == 'SACCADE'
-        saccade_count = saccade_starts.sum()
+        # Use saccade count from adaptive detector (more accurate with physiological filtering)
+        valid_saccade_count = len([s for s in self.saccade_events if s.is_valid])
 
         # Calculate total duration
         total_duration = timestamps[-1] - timestamps[0]
@@ -155,21 +183,35 @@ class WholeSessionAnalyzer:
             np.mean(fixation_durations) * 1000 if len(fixation_durations) > 0 else 0
         )
 
+        # Store raw fixation durations for visualization (in ms)
+        self.fixation_durations = [d * 1000 for d in fixation_durations]
+
+        # Get saccade statistics from adaptive detector
+        saccade_stats = self.saccade_detector.get_summary_statistics(self.saccade_events)
+
         metrics = {
             'fixation_rate_hz': fixation_rate_hz,
             'fixation_count': int(fixation_count),
             'fixation_proportion': fixation_proportion,
             'mean_fixation_duration_ms': mean_fixation_duration_ms,
-            'saccade_count': int(saccade_count),
+            'saccade_count': valid_saccade_count,
             'saccade_proportion': saccade_proportion,
             'total_duration_s': total_duration,
-            'total_samples': total_samples
+            'total_samples': total_samples,
+            # New adaptive saccade detection metrics
+            'adaptive_threshold_deg_s': self.adaptive_threshold,
+            'saccade_amplitude_mean_deg': saccade_stats.get('amplitude_mean_deg', 0),
+            'saccade_amplitude_max_deg': saccade_stats.get('amplitude_max_deg', 0),
+            'saccade_peak_velocity_mean_deg_s': saccade_stats.get('peak_velocity_mean_deg_s', 0),
+            'saccade_peak_velocity_max_deg_s': saccade_stats.get('peak_velocity_max_deg_s', 0),
+            'main_sequence_r_squared': saccade_stats.get('main_sequence_r_squared', 0),
         }
 
         self.metrics['goal_a'] = metrics
         logger.info(f"  Fixation rate: {fixation_rate_hz:.2f} Hz")
         logger.info(f"  Fixation count: {fixation_count}")
         logger.info(f"  Mean fixation duration: {mean_fixation_duration_ms:.1f} ms")
+        logger.info(f"  Valid saccade count: {valid_saccade_count} (adaptive threshold: {self.adaptive_threshold:.1f} deg/s)")
 
         return metrics
 
@@ -200,6 +242,56 @@ class WholeSessionAnalyzer:
 
         return durations
 
+    def _calculate_saccade_events(
+        self,
+        states: np.ndarray,
+        timestamps: np.ndarray,
+        velocities: np.ndarray,
+        valid_data: pd.DataFrame
+    ) -> None:
+        """
+        Extract saccade events using adaptive MAD-based threshold detection.
+
+        Uses AdaptiveSaccadeDetector for:
+        - MAD-based adaptive threshold (replaces fixed 300 deg/s)
+        - Amplitude calculation from 3D gaze direction vectors (not velocity integration)
+        - Physiological filtering (duration, amplitude, velocity constraints)
+        - Main sequence validation
+
+        Stores results in:
+        - self.saccade_events: List[SaccadeEvent] with full event data
+        - self.saccade_amplitudes: List[float] for visualization
+        - self.saccade_peak_velocities: List[float] for visualization
+        - self.adaptive_threshold: Computed threshold value
+        """
+        # Use the adaptive saccade detector
+        saccade_events = self.saccade_detector.detect_saccades(valid_data)
+
+        # Store the adaptive threshold
+        self.adaptive_threshold = self.saccade_detector.adaptive_threshold
+
+        # Extract valid saccades for visualization
+        valid_events = [s for s in saccade_events if s.is_valid]
+
+        self.saccade_events = saccade_events
+        self.saccade_amplitudes = [s.amplitude_deg for s in valid_events]
+        self.saccade_peak_velocities = [s.peak_velocity_deg_s for s in valid_events]
+
+        # Get summary statistics
+        stats = self.saccade_detector.get_summary_statistics(saccade_events)
+
+        logger.info(f"  Adaptive threshold: {self.adaptive_threshold:.1f} deg/s")
+        logger.info(f"  Total detected: {stats['total_detected']}, "
+                   f"Valid: {stats['valid_count']}, "
+                   f"Rejected: {stats['rejected_count']}")
+        if stats['valid_count'] > 0:
+            logger.info(f"  Amplitude: {stats['amplitude_mean_deg']:.1f} +/- {stats['amplitude_std_deg']:.1f} deg "
+                       f"(max: {stats['amplitude_max_deg']:.1f} deg)")
+            logger.info(f"  Peak velocity: {stats['peak_velocity_mean_deg_s']:.1f} +/- "
+                       f"{stats['peak_velocity_std_deg_s']:.1f} deg/s "
+                       f"(max: {stats['peak_velocity_max_deg_s']:.1f} deg/s)")
+            logger.info(f"  Main sequence R²: {stats['main_sequence_r_squared']:.3f}")
+
     def _empty_fixation_metrics(self) -> Dict[str, float]:
         """Return empty fixation metrics dictionary."""
         return {
@@ -210,7 +302,13 @@ class WholeSessionAnalyzer:
             'saccade_count': 0,
             'saccade_proportion': 0.0,
             'total_duration_s': 0.0,
-            'total_samples': 0
+            'total_samples': 0,
+            'adaptive_threshold_deg_s': 0.0,
+            'saccade_amplitude_mean_deg': 0.0,
+            'saccade_amplitude_max_deg': 0.0,
+            'saccade_peak_velocity_mean_deg_s': 0.0,
+            'saccade_peak_velocity_max_deg_s': 0.0,
+            'main_sequence_r_squared': 0.0,
         }
 
     # ==================== GOAL B: Cognitive Load ====================
@@ -219,24 +317,27 @@ class WholeSessionAnalyzer:
         """
         Goal B: Calculate luminance-adjusted pupil residuals as cognitive load proxy.
 
+        Uses per-subject fitted temporal kernel to account for individual
+        differences in Pupillary Light Reflex (PLR) dynamics.
+
         Logic:
-        1. Fit linear regression: Pupil Diameter ~ Luminance
-        2. Calculate residuals: R = Observed - Predicted
-        3. Mean R > 0 indicates high cognitive load
+        1. Fit per-subject PLR kernel parameters (t_max, n)
+        2. Convolve luminance with fitted kernel
+        3. Fit linear regression: Pupil Diameter ~ Convolved Luminance
+        4. Calculate residuals for cognitive load assessment
 
         Returns:
-            Dictionary with pupil metrics:
-            - mean_residual: Mean pupil residual (positive = high load)
-            - std_residual: Std dev of residuals
-            - regression_r_squared: R² of luminance regression
-            - regression_slope: Slope of luminance effect
-            - raw_pupil_mean: Mean raw pupil diameter (mm)
-            - raw_pupil_std: Std dev of raw pupil (mm)
+            Dictionary with pupil metrics including:
+            - Instantaneous regression metrics (baseline)
+            - Convolved regression metrics (with temporal kernel)
+            - Kernel parameters (t_max, n) as individual difference metrics
+            - R² improvement from temporal modeling
         """
         if self.data is None:
             raise ValueError("No data loaded. Call load_data() first.")
 
         logger.info("Calculating luminance-adjusted pupil residuals (Goal B)...")
+        logger.info("  Using per-subject fitted temporal kernel...")
 
         # Get valid data with both pupil and luminance
         mask = (
@@ -251,57 +352,115 @@ class WholeSessionAnalyzer:
 
         pupil = valid_data['pupil_diameter_avg'].values
         luminance = valid_data['frame_luminance'].values
+        timestamps = valid_data['gaze_timestamp'].values
 
-        # Fit linear regression
-        slope, intercept, r_value, p_value, std_err = stats.linregress(
-            luminance, pupil
-        )
+        # Estimate sampling rate from timestamps
+        dt = np.median(np.diff(timestamps))
+        sampling_rate = 1.0 / dt if dt > 0 else 90.0
+        logger.info(f"  Estimated sampling rate: {sampling_rate:.1f} Hz")
 
-        # Calculate predicted values and residuals
-        predicted = slope * luminance + intercept
-        residuals = pupil - predicted
+        # === TEMPORAL KERNEL FITTING ===
+        self.kernel_model = PupilLuminanceKernel(sampling_rate_hz=sampling_rate)
 
-        # Calculate metrics
-        mean_residual = np.mean(residuals)
-        std_residual = np.std(residuals)
-        r_squared = r_value ** 2
+        # Fit kernel parameters to this subject's data
+        kernel_params = self.kernel_model.fit_to_subject(pupil, luminance)
+
+        # Get full regression results (both instantaneous and convolved)
+        kernel_results = self.kernel_model.fit_regression(pupil, luminance)
+
+        # Store data for visualization
+        self.pupil_timestamps = timestamps
+        self.pupil_residuals = kernel_results['residuals_convolved']
+        self.convolved_luminance = kernel_results['convolved_luminance']
+        self.pupil_predicted = kernel_results['predicted_convolved']
+
+        # Extract metrics
+        r2_inst = kernel_results['r_squared_instantaneous']
+        r2_conv = kernel_results['r_squared_convolved']
+        r2_improvement = kernel_results['r_squared_improvement']
 
         metrics = {
-            'mean_residual': mean_residual,
-            'std_residual': std_residual,
-            'regression_r_squared': r_squared,
-            'regression_slope': slope,
-            'regression_intercept': intercept,
-            'regression_p_value': p_value,
+            # Instantaneous regression (baseline for comparison)
+            'regression_r_squared': r2_inst,
+            'regression_slope': kernel_results['slope_instantaneous'],
+            'regression_intercept': kernel_results['intercept_instantaneous'],
+            'regression_p_value': kernel_results['p_value_instantaneous'],
+
+            # Convolved regression (with fitted temporal kernel)
+            'regression_r_squared_convolved': r2_conv,
+            'regression_slope_convolved': kernel_results['slope_convolved'],
+            'regression_intercept_convolved': kernel_results['intercept_convolved'],
+            'regression_p_value_convolved': kernel_results['p_value_convolved'],
+
+            # Residuals (from convolved regression - better for cognitive load)
+            'mean_residual': kernel_results['residual_mean_convolved'],
+            'std_residual': kernel_results['residual_std_convolved'],
+
+            # Kernel parameters (individual difference metrics)
+            'kernel_t_max_ms': kernel_results['kernel_t_max_ms'],
+            'kernel_n': kernel_results['kernel_n'],
+            'kernel_is_fitted': kernel_results['kernel_is_fitted'],
+
+            # Improvement metrics
+            'r_squared_improvement': r2_improvement,
+            'r_squared_improvement_pct': kernel_results['r_squared_improvement_pct'],
+
+            # Raw data statistics
             'raw_pupil_mean': np.mean(pupil),
             'raw_pupil_std': np.std(pupil),
             'luminance_mean': np.mean(luminance),
             'luminance_std': np.std(luminance),
-            'n_samples': len(valid_data)
+            'n_samples': kernel_results['n_valid_samples']
         }
 
         self.metrics['goal_b'] = metrics
-        logger.info(f"  Mean residual: {mean_residual:.4f} mm")
-        logger.info(f"  R² (luminance effect): {r_squared:.3f}")
-        logger.info(f"  Regression slope: {slope:.6f}")
 
-        # Interpretation
-        if mean_residual > 0:
-            logger.info("  Interpretation: POSITIVE residual suggests elevated cognitive load")
+        # Logging
+        logger.info(f"  Instantaneous R²: {r2_inst:.4f}")
+        logger.info(f"  Convolved R²:     {r2_conv:.4f} (improvement: {r2_improvement:+.4f})")
+        logger.info(f"  Kernel params:    t_max={kernel_params.t_max_ms:.1f}ms, n={kernel_params.n:.2f}")
+        logger.info(f"  Kernel fitted:    {kernel_params.is_fitted}")
+        logger.info(f"  Residual std:     {metrics['std_residual']:.4f} mm")
+
+        # Interpretation based on kernel parameters
+        if kernel_params.t_max_ms < 500:
+            logger.info("  PLR interpretation: FAST response (t_max < 500ms)")
+        elif kernel_params.t_max_ms > 800:
+            logger.info("  PLR interpretation: SLOW response (t_max > 800ms) - possible fatigue/load")
         else:
-            logger.info("  Interpretation: NEGATIVE residual suggests lower cognitive load")
+            logger.info("  PLR interpretation: TYPICAL response (t_max 500-800ms)")
 
         return metrics
 
     def _empty_pupil_metrics(self) -> Dict[str, float]:
         """Return empty pupil metrics dictionary."""
         return {
-            'mean_residual': 0.0,
-            'std_residual': 0.0,
+            # Instantaneous regression
             'regression_r_squared': 0.0,
             'regression_slope': 0.0,
             'regression_intercept': 0.0,
             'regression_p_value': 1.0,
+
+            # Convolved regression
+            'regression_r_squared_convolved': 0.0,
+            'regression_slope_convolved': 0.0,
+            'regression_intercept_convolved': 0.0,
+            'regression_p_value_convolved': 1.0,
+
+            # Residuals
+            'mean_residual': 0.0,
+            'std_residual': 0.0,
+
+            # Kernel parameters
+            'kernel_t_max_ms': 512.0,
+            'kernel_n': 10.1,
+            'kernel_is_fitted': False,
+
+            # Improvement metrics
+            'r_squared_improvement': 0.0,
+            'r_squared_improvement_pct': 0.0,
+
+            # Raw statistics
             'raw_pupil_mean': 0.0,
             'raw_pupil_std': 0.0,
             'luminance_mean': 0.0,
@@ -350,6 +509,12 @@ class WholeSessionAnalyzer:
 
         # Calculate total rotation magnitude at each sample
         rotation_magnitude = np.sqrt(gyro_x**2 + gyro_y**2 + gyro_z**2)
+
+        # Store raw data for visualization
+        self.gyro_magnitude = rotation_magnitude
+        self.gyro_timestamps = timestamps
+        self.gyro_x = gyro_x  # Pitch
+        self.gyro_y = gyro_y  # Yaw
 
         # Integrate rotation over time (trapezoidal integration)
         dt = np.diff(timestamps)
@@ -661,21 +826,43 @@ class WholeSessionAnalyzer:
             lines.append(f"  Fixation Count:          {m['fixation_count']}")
             lines.append(f"  Fixation Proportion:     {m['fixation_proportion']*100:.1f}%")
             lines.append(f"  Mean Fixation Duration:  {m['mean_fixation_duration_ms']:.0f} ms")
-            lines.append(f"  Saccade Count:           {m['saccade_count']}")
             lines.append(f"  Recording Duration:      {m['total_duration_s']:.1f} s")
+            lines.append("")
+            lines.append("  Saccade Detection (Adaptive MAD Threshold)")
+            lines.append(f"    Threshold:             {m.get('adaptive_threshold_deg_s', 0):.1f} deg/s")
+            lines.append(f"    Valid Saccade Count:   {m['saccade_count']}")
+            lines.append(f"    Mean Amplitude:        {m.get('saccade_amplitude_mean_deg', 0):.1f} deg")
+            lines.append(f"    Max Amplitude:         {m.get('saccade_amplitude_max_deg', 0):.1f} deg")
+            lines.append(f"    Mean Peak Velocity:    {m.get('saccade_peak_velocity_mean_deg_s', 0):.1f} deg/s")
+            lines.append(f"    Max Peak Velocity:     {m.get('saccade_peak_velocity_max_deg_s', 0):.1f} deg/s")
+            lines.append(f"    Main Sequence R²:      {m.get('main_sequence_r_squared', 0):.3f}")
 
         if 'goal_b' in self.metrics:
             m = self.metrics['goal_b']
             lines.append("\nGOAL B: COGNITIVE LOAD (Pupil Analysis)")
             lines.append("-" * 40)
-            lines.append(f"  Mean Pupil Residual:     {m['mean_residual']:.4f} mm")
-            lines.append(f"  Residual Std Dev:        {m['std_residual']:.4f} mm")
-            lines.append(f"  Luminance R²:            {m['regression_r_squared']:.3f}")
-            lines.append(f"  Raw Pupil Mean:          {m['raw_pupil_mean']:.2f} mm")
-            if m['mean_residual'] > 0:
-                lines.append("  Interpretation:          ELEVATED cognitive load")
+            lines.append("  Pupil-Luminance Regression:")
+            lines.append(f"    Instantaneous R²:      {m['regression_r_squared']:.4f}")
+            lines.append(f"    Convolved R²:          {m.get('regression_r_squared_convolved', 0):.4f}")
+            lines.append(f"    R² Improvement:        {m.get('r_squared_improvement', 0):+.4f}")
+            lines.append("")
+            lines.append("  PLR Temporal Kernel (per-subject fitted):")
+            lines.append(f"    t_max (time to peak):  {m.get('kernel_t_max_ms', 512):.1f} ms")
+            lines.append(f"    n (shape param):       {m.get('kernel_n', 10.1):.2f}")
+            lines.append(f"    Fitting succeeded:     {m.get('kernel_is_fitted', False)}")
+            lines.append("")
+            lines.append("  Cognitive Load Metrics:")
+            lines.append(f"    Residual Std Dev:      {m['std_residual']:.4f} mm")
+            lines.append(f"    Raw Pupil Mean:        {m['raw_pupil_mean']:.2f} mm")
+            lines.append(f"    Raw Pupil Std:         {m['raw_pupil_std']:.2f} mm")
+            # Interpretation based on kernel parameters
+            t_max = m.get('kernel_t_max_ms', 512)
+            if t_max < 500:
+                lines.append("  PLR Speed:               FAST (alert, young)")
+            elif t_max > 800:
+                lines.append("  PLR Speed:               SLOW (fatigue, load)")
             else:
-                lines.append("  Interpretation:          LOWER cognitive load")
+                lines.append("  PLR Speed:               TYPICAL")
 
         if 'goal_c' in self.metrics:
             m = self.metrics['goal_c']

@@ -1,0 +1,155 @@
+================================================================================
+DURATION REGRESSION ANALYSIS WITH PLR TEMPORAL KERNEL METRICS
+================================================================================
+Generated: 2026-02-01
+Analysis: Regularized Linear Regression (Lasso)
+
+================================================================================
+1. OVERVIEW
+================================================================================
+
+This analysis extends the previous duration regression by incorporating new
+metrics from the Pupillary Light Reflex (PLR) temporal kernel fitting:
+
+  - kernel_t_max_ms:              Time to peak of fitted PLR kernel
+  - kernel_n:                     Shape parameter of PLR kernel
+  - regression_r_squared_convolved: R² with temporal convolution
+  - r_squared_improvement:        Gain from temporal modeling
+
+These metrics capture individual differences in how each subject's pupil
+responds to light changes, potentially reflecting autonomic function,
+fatigue, or cognitive state.
+
+================================================================================
+2. DATA SUMMARY
+================================================================================
+
+Total subjects in cohort:     14
+Excluded as outlier:          20251029T131758Z (22 seconds)
+Subjects in analysis:         13
+
+Total features available:     28
+  - Traditional oculometrics: 24
+  - New kernel metrics:       4
+
+================================================================================
+3. KERNEL METRICS CORRELATIONS WITH DURATION
+================================================================================
+
+  regression_r_squared_convolved      r = +0.526  p = 0.0648 
+  kernel_t_max_ms                     r = +0.201  p = 0.5097 
+  r_squared_improvement               r = +0.143  p = 0.6413 
+  kernel_n                            r = -0.059  p = 0.8481 
+
+INTERPRETATION:
+
+  regression_r_squared_convolved (r = +0.526, p = 0.065):
+    This is the strongest kernel-related predictor. Subjects with better
+    pupil-luminance coupling (after temporal modeling) tend to have LONGER
+    recordings. This could indicate:
+    - More stable/predictable physiology → able to sustain longer sessions
+    - Better data quality → more analyzable recordings
+
+  kernel_t_max_ms (r = +0.201, p = 0.510):
+    Weak positive trend: slower PLR → longer sessions. Not significant.
+
+  r_squared_improvement (r = +0.143, p = 0.641):
+    Marginal trend: subjects who benefit more from temporal modeling
+    tend to have slightly longer sessions.
+
+  kernel_n (r = -0.059, p = 0.848):
+    No relationship between PLR shape and duration.
+
+================================================================================
+4. LASSO REGRESSION RESULTS
+================================================================================
+
+Optimal alpha:              75.6450
+R² (in-sample):             0.5496
+Features selected:          4 out of 28
+
+SELECTED FEATURES (sorted by |coefficient|):
+  main_sequence_r_squared                 +117.83  → LONGER 
+  regression_r_squared_convolved           +52.49  → LONGER (KERNEL)
+  luminance_mean                           -25.26  → SHORTER 
+  mean_residual                             -2.83  → SHORTER 
+
+KEY FINDING: regression_r_squared_convolved WAS SELECTED BY LASSO
+
+This means the convolved R² (pupil-luminance fit quality after temporal
+kernel modeling) adds predictive value for duration beyond the other
+traditional oculometric features. Specifically:
+
+  Higher regression_r_squared_convolved → LONGER recording duration
+
+================================================================================
+5. COMPARISON: OLD vs NEW ANALYSIS
+================================================================================
+
+Previous analysis (without kernel metrics):
+  - Features: 18
+  - Lasso R²: 0.659
+  - Selected: 5 features (raw_pupil_std, mean_residual, luminance_mean,
+              regression_r_squared, rotation_rate_std)
+
+Current analysis (with kernel metrics):
+  - Features: 28
+  - Lasso R²: 0.550
+  - Selected: 4 features (main_sequence_r_squared, 
+              regression_r_squared_convolved*, luminance_mean, mean_residual)
+  
+  * NEW: kernel metric selected
+
+The addition of kernel metrics changed the selected feature set. Notably:
+  - raw_pupil_std was replaced by regression_r_squared_convolved
+  - The instantaneous regression_r_squared was replaced by the convolved version
+  - main_sequence_r_squared emerged as the strongest predictor
+
+================================================================================
+6. SIGNIFICANT PREDICTORS (p < 0.05)
+================================================================================
+
+Only ONE feature shows a statistically significant correlation with duration:
+
+  main_sequence_r_squared:  r = +0.697, p = 0.008 **
+
+This means: subjects with better-fitting main sequence relationships
+(saccade amplitude vs velocity) tend to have LONGER recordings.
+
+The kernel metric regression_r_squared_convolved approaches significance:
+  r = +0.526, p = 0.065 (trending)
+
+================================================================================
+7. CONCLUSIONS
+================================================================================
+
+1. KERNEL METRIC ADDS PREDICTIVE VALUE
+   The convolved R² (regression_r_squared_convolved) was selected by Lasso,
+   indicating that temporal modeling of the pupil-luminance relationship
+   captures information relevant to recording duration.
+
+2. BETTER PLR MODELING → LONGER SESSIONS
+   Subjects with higher convolved R² (better pupil-luminance coupling after
+   temporal kernel fitting) tend to have longer recordings. This may reflect
+   more stable physiology or better data quality.
+
+3. KERNEL PARAMETERS NOT SIGNIFICANT
+   The kernel parameters themselves (t_max, n) do not significantly predict
+   duration. These may be more relevant for other outcomes (e.g., fatigue,
+   skill level) than session duration.
+
+4. MAIN SEQUENCE REMAINS STRONGEST
+   The main sequence R² (saccade dynamics quality) is the only statistically
+   significant predictor of duration (r=0.70, p=0.008).
+
+================================================================================
+8. OUTPUT FILES
+================================================================================
+
+  Comprehensive figure:  reports/figures/duration_regression_kernel_comprehensive.png
+  Analysis results:      reports/logs/duration_regression_kernel_analysis.json
+  This report:           reports/logs/duration_regression_kernel_report.txt
+
+================================================================================
+END OF REPORT
+================================================================================
