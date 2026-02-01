@@ -2,18 +2,17 @@
 """
 batch_process_with_heatmaps.py - Enhanced master script with automatic heatmap generation and skip list
 
-This enhanced script automatically processes multiple subjects by:
-1. Running gaze processing with perspective correction for each subject
-2. Creating final high-resolution gaze CSV files
-3. Generating heatmap visualizations
-4. Organizing outputs with logical naming conventions
-5. Skipping known problematic subjects using a skip list
+This script is the main entry point for the analysis pipeline. It automates the processing
+of multiple subjects found in the data directory.
+
+The pipeline performs 4 main steps for each subject:
+1.  **Perspective Correction**: Stabilizes the video and gaze data using ArUco markers.
+2.  **CSV Generation**: Creates a high-resolution dataset with physics-based metrics (velocity, pupil, IMU).
+3.  **Visualizations**: Generates heatmaps and scatter plots of the gaze patterns.
+4.  **Clinical Analysis**: Calculates skill metrics (Goals A-D) and generates clinical dashboards.
 
 Usage:
-    python3 batch_process_with_heatmaps.py
-    
-Or import and use programmatically:
-    from batch_process_with_heatmaps import batch_process_subjects
+    python3 src/batch_process_with_heatmaps.py
 """
 
 import os
@@ -27,17 +26,24 @@ import traceback
 
 from .logging_config import configure_logging, get_logger
 
-# Configure logging for the application
+# Configure logging to print progress to the console and save to files
 logger = get_logger(__name__)
 
 
-# Import the refactored processing functions
+# Import the processing modules from other files in the src/ directory
 try:
+    # Step 1: Perspective Correction logic
     from .processing.gaze_on_perspective_corrected_frames_refactored import process_gaze_with_perspective_correction
+    # Step 2: CSV Creation logic
     from .processing.create_final_csv_refactored import create_final_gaze_csv
+    # Step 3: Heatmap Generation logic
     from .analysis.gaze_heatmap_analysis import GazeHeatmapAnalyzer
+    # Step 4: Clinical Analysis logic
     from .analysis.whole_session_analysis import WholeSessionAnalyzer
+    # Step 5: Clinical Visualization logic
     from .analysis.visualizations import GazeVisualizer
+
+    # Utilities for finding folders and creating reports
     from .processing.batch_processing.subject_discovery import discover_subject_folders
     from .processing.batch_processing.reporting import save_processing_log, create_summary_report
 except ImportError as e:
@@ -48,33 +54,35 @@ except ImportError as e:
 
 class EnhancedBatchProcessor:
     """
-    Enhanced batch processor class with automatic heatmap generation and skip list functionality.
+    This class manages the entire batch processing workflow.
+    It reads configuration, finds data, and runs the pipeline for each subject.
     """
     
     def __init__(self, config=None):
         """
-        Initialize the enhanced batch processor with configuration.
+        Initialize the processor.
         
         Args:
-            config (dict): Configuration dictionary with processing parameters
+            config (dict): Optional configuration to override defaults.
         """
         # --- Find project paths automatically ---
+        # Get the path of this script to locate project root
         script_path = Path(__file__).resolve()
         src_dir = script_path.parent
         self.project_root = src_dir.parent
 
-        # Load base configuration from JSON file
+        # Load configuration from config.json
         self.config = self._load_base_config()
 
-        # Set dynamic paths
+        # Set input/output directories relative to project root
         self.config['input_base_dir'] = self.project_root / self.config.get('input_base_dir', 'data/raw')
         self.config['output_base_dir'] = self.project_root
 
-        # Update with user config if provided
+        # Apply user overrides if provided
         if config:
             self._update_config_recursive(self.config, config)
 
-        # Initialize tracking variables
+        # Initialize counters to track progress
         self.results = []
         self.start_time = None
         self.total_subjects = 0
@@ -82,45 +90,47 @@ class EnhancedBatchProcessor:
         self.failed_subjects = 0
         self.skipped_subjects = 0
 
-        # Create organized output directories
+        # Create the folder structure for outputs (reports/, data/processed/, etc.)
         self._create_output_directories()
 
-        # Initialize heatmap analyzer
+        # Initialize the Heatmap Analyzer (for Step 3)
         if self.config['generate_heatmaps']:
             self.heatmap_analyzer = GazeHeatmapAnalyzer(self.config['heatmap_config'])
         else:
             self.heatmap_analyzer = None
 
-        # Initialize gaze visualizer for clinical visualizations
+        # Initialize the Visualizer (for Step 5 - Clinical Dashboards)
         self.gaze_visualizer = GazeVisualizer(self.config.get('visualization_config', {}))
 
     def _load_base_config(self):
         """
-        Load base configuration from config.json and provide sane defaults.
+        Load 'config.json' from the project root.
+        If keys are missing, it uses the default values defined here.
         """
         config_path = self.project_root / 'config.json'
 
+        # Load the file
         with open(config_path, 'r') as f:
             user_config = json.load(f)
 
-        # Start with sane defaults
+        # Define default settings (fallback values)
         default_config = {
             'video_filename': 'scenevideo.mp4',
             'gaze_filename': 'gazedata.gz',
             'subject_folder_pattern': '*',
             'subjects_to_skip': [],
-            'output_width': 1000,
-            'output_height': 606,
-            'target_markers': [13, 14, 15, 16],
-            'frame_width': 1920,
-            'frame_height': 1080,
+            'output_width': 1000,   # Width of stabilized video
+            'output_height': 606,   # Height of stabilized video
+            'target_markers': [13, 14, 15, 16], # IDs of ArUco markers to look for
+            'frame_width': 1920,    # Original video width
+            'frame_height': 1080,   # Original video height
             'processing_options': {
                 'use_preselected_parameters': False,
-                'use_frame_preprocessing': False,
+                'use_frame_preprocessing': False, # Enhance contrast if markers are hard to find
                 'use_outer_points': False,
-                'show_video': False
+                'show_video': False     # Don't show video window during batch processing
             },
-            'skip_existing': True,
+            'skip_existing': True,      # Don't re-process if output files exist
             'create_summary_report': True,
             'generate_heatmaps': True,
             'heatmap_config': {
@@ -128,7 +138,7 @@ class EnhancedBatchProcessor:
                 'dpi': 300,
                 'color_scheme': 'viridis',
                 'heatmap_bins': 50,
-                'gaussian_sigma': 1.0,
+                'gaussian_sigma': 1.0,  # Smoothing factor
                 'output_format': 'png',
                 'create_heatmap': True,
                 'create_scatter': True,
@@ -138,19 +148,19 @@ class EnhancedBatchProcessor:
                 'save_stats': True,
                 'min_valid_points': 100
             },
-            'run_whole_session_analysis': True,
+            'run_whole_session_analysis': True, # Enable Goals A-D analysis
             'whole_session_config': {
-                'include_goal_d': False  # Visual strategy requires video processing
+                'include_goal_d': False  # Visual strategy requires video processing (slow)
             }
         }
         
-        # Update defaults with user config
+        # Merge user config into defaults
         self._update_config_recursive(default_config, user_config)
         return default_config
 
     def _update_config_recursive(self, base_dict, new_dict):
         """
-        Recursively update dictionary.
+        Helper to merge nested dictionaries (configuration).
         """
         for key, value in new_dict.items():
             if key in base_dict and isinstance(base_dict[key], dict) and isinstance(value, dict):
@@ -160,12 +170,10 @@ class EnhancedBatchProcessor:
     
     def _create_output_directories(self):
         """
-        Create the organized output directory structure.
+        Create the standard directory structure for outputs.
         """
-        # Convert output_base_dir to Path object and resolve it
         base_dir = Path(self.config['output_base_dir']).resolve()
         
-        # Create main output directories with explicit paths
         self.output_root = base_dir
         self.reports_dir = self.output_root / "reports"
         self.data_dir = self.output_root / "data"
@@ -174,40 +182,16 @@ class EnhancedBatchProcessor:
         self.logs_dir = self.reports_dir / "logs"
         self.processed_data_dir = self.data_dir / "processed"
         
-        # Create all directories
+        # Create directories if they don't exist
         self.figures_dir.mkdir(parents=True, exist_ok=True)
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         self.processed_data_dir.mkdir(parents=True, exist_ok=True)
         
-        logger.info(f"Output directory structure created:")
-        logger.info(f"  Root: {self.output_root}")
-        logger.info(f"  Processed Data: {self.processed_data_dir}")
-        logger.info(f"  Figures: {self.figures_dir}")
-        logger.info(f"  Logs: {self.logs_dir}")
-    
-    def _update_config(self, user_config):
-        """
-        Recursively update configuration with user-provided values.
-        """
-        def update_dict(base_dict, new_dict):
-            for key, value in new_dict.items():
-                if key in base_dict and isinstance(base_dict[key], dict) and isinstance(value, dict):
-                    update_dict(base_dict[key], value)
-                else:
-                    base_dict[key] = value
-        
-        update_dict(self.config, user_config)
-    
+        logger.info(f"Output directory structure created at: {self.output_root}")
     
     def create_output_paths(self, subject_folder):
         """
-        Create output file paths for a subject using the new organized structure.
-        
-        Args:
-            subject_folder (Path): Path to the subject's data folder
-            
-        Returns:
-            dict: Dictionary of output file paths
+        Define the file paths where outputs will be saved for a specific subject.
         """
         subject_name = subject_folder.name
         
@@ -216,18 +200,22 @@ class EnhancedBatchProcessor:
         
         outputs = {
             'output_dir': subject_data_dir,
+            # Step 1 Output
             'corrected_video': subject_data_dir / f"{subject_name}_gaze_corrected_video.mp4",
             'intermediate_csv': subject_data_dir / f"{subject_name}_gaze_output.csv",
             'transformation_history': subject_data_dir / f"{subject_name}_transformation_history.npy",
+            # Step 2 Output (The Golden Source)
             'final_csv': subject_data_dir / f"{subject_name}_final_gaze_data.csv",
-            'processing_log': self.logs_dir / f"{subject_name}_processing_log.txt",
-            'gaze_stats': self.logs_dir / f"{subject_name}_gaze_statistics.json",
-            'whole_session_analysis': self.logs_dir / f"{subject_name}_whole_session_analysis.json",
+            # Step 3 Output (Heatmaps)
             'heatmap_png': self.figures_dir / f"{subject_name}_heatmap.png",
             'scatter_png': self.figures_dir / f"{subject_name}_scatter.png",
             'contour_png': self.figures_dir / f"{subject_name}_contour.png",
             'dashboard_png': self.figures_dir / f"{subject_name}_dashboard.png",
-            # Clinical visualization paths
+            # Step 4 Output (Analysis Data)
+            'processing_log': self.logs_dir / f"{subject_name}_processing_log.txt",
+            'gaze_stats': self.logs_dir / f"{subject_name}_gaze_statistics.json",
+            'whole_session_analysis': self.logs_dir / f"{subject_name}_whole_session_analysis.json",
+            # Step 5 Output (Clinical Viz)
             'viz_cognitive_fingerprint': self.figures_dir / f"{subject_name}_viz_cognitive_fingerprint.png",
             'viz_main_sequence': self.figures_dir / f"{subject_name}_viz_main_sequence.png",
             'viz_stress_timeline': self.figures_dir / f"{subject_name}_viz_stress_timeline.png",
@@ -238,13 +226,7 @@ class EnhancedBatchProcessor:
     
     def check_existing_outputs(self, output_paths):
         """
-        Check if outputs already exist for a subject.
-
-        Args:
-            output_paths (dict): Dictionary of output file paths
-
-        Returns:
-            bool: True if ALL outputs exist and skip_existing is enabled
+        Check if we can skip this subject because all files already exist.
         """
         if not self.config['skip_existing']:
             return False
@@ -252,14 +234,15 @@ class EnhancedBatchProcessor:
         final_csv = output_paths['final_csv']
         dashboard_png = output_paths['dashboard_png']
 
-        # Check if both CSV and main visualization exist
+        # We generally need at least the final CSV
         if not final_csv.exists():
             return False
 
+        # If heatmaps are enabled, check for them
         if self.config['generate_heatmaps'] and not dashboard_png.exists():
             return False
 
-        # Check if clinical visualizations exist (if whole-session analysis enabled)
+        # If analysis is enabled, check for clinical charts
         if self.config.get('run_whole_session_analysis', True):
             viz_files = [
                 output_paths['viz_cognitive_fingerprint'],
@@ -275,22 +258,20 @@ class EnhancedBatchProcessor:
     
     def process_single_subject(self, subject_folder):
         """
-        Process a single subject's data with all three steps.
+        Run the full pipeline for ONE subject.
         
         Args:
-            subject_folder (Path): Path to the subject's data folder
+            subject_folder (Path): Directory containing raw data for one subject.
             
         Returns:
-            dict: Processing results for this subject
+            dict: Summary of results for this subject.
         """
         subject_name = subject_folder.name
         logger.info(f"Processing subject: {subject_name}")
-        logger.info(f"Subject folder: {subject_folder}")
         
-        # Create output paths
         output_paths = self.create_output_paths(subject_folder)
         
-        # Check if we should skip this subject
+        # Check for skip
         if self.check_existing_outputs(output_paths):
             return {
                 'subject_name': subject_name,
@@ -299,27 +280,22 @@ class EnhancedBatchProcessor:
                 'processing_time': 0
             }
         
-        # Initialize result tracking
         subject_start_time = time.time()
         result = {
             'subject_name': subject_name,
             'subject_folder': str(subject_folder),
-            'output_paths': {k: str(v) for k, v in output_paths.items()},
             'status': 'failed',
             'error_message': None,
-            'processing_time': 0,
-            'step1_stats': None,
-            'step2_stats': None,
-            'step3_stats': None,  # Heatmap analysis stats
-            'step4_stats': None   # Whole-session analysis stats
+            'processing_time': 0
         }
         
         try:
-            # Step 1: Process gaze with perspective correction
+            # === STEP 1: Perspective Correction ===
+            # Detects ArUco markers and stabilizes the video/gaze
             transformation_exists = output_paths['transformation_history'].exists()
             if transformation_exists:
                 logger.info(f"Step 1: Skipping (transformation history exists)")
-                result['step1_stats'] = {'skipped': True, 'reason': 'transformation_history exists'}
+                result['step1_stats'] = {'skipped': True}
             else:
                 logger.info(f"Step 1: Processing video with gaze data...")
 
@@ -336,13 +312,14 @@ class EnhancedBatchProcessor:
                 )
 
                 result['step1_stats'] = step1_stats
-                logger.info(f"Step 1 completed: {step1_stats['frames_with_valid_homography']} frames with valid homography")
+                logger.info(f"Step 1 completed: {step1_stats['frames_with_valid_homography']} frames stabilized")
 
-            # Step 2: Create final high-resolution CSV
+            # === STEP 2: Final CSV Generation ===
+            # Merges gaze, IMU, and video data into one high-res CSV with physics metrics
             final_csv_exists = output_paths['final_csv'].exists()
             if final_csv_exists:
                 logger.info(f"Step 2: Skipping (final CSV exists)")
-                result['step2_stats'] = {'skipped': True, 'success': True, 'reason': 'final_csv exists'}
+                result['step2_stats'] = {'skipped': True, 'success': True}
             else:
                 logger.info(f"Step 2: Creating final high-resolution gaze CSV...")
 
@@ -356,45 +333,32 @@ class EnhancedBatchProcessor:
 
                 if not step2_stats or not step2_stats.get('success', False):
                     result['error_message'] = "Step 2 failed: Could not create final CSV"
-                    logger.error(f"Step 2 failed: Could not create final CSV")
                     return result
 
                 result['step2_stats'] = step2_stats
-                logger.info(f"Step 2 completed: {step2_stats['valid_transformations']} valid transformations ({step2_stats['valid_percentage']:.1f}%)")
+                logger.info(f"Step 2 completed: CSV created")
             
-            # Step 3: Generate heatmap visualizations
+            # === STEP 3: Heatmap Generation ===
+            # Creates visual maps of where the surgeon looked
             if self.config['generate_heatmaps'] and self.heatmap_analyzer:
                 logger.info(f"Step 3: Generating gaze heatmap visualizations...")
                 
-                # Configure the heatmap analyzer to use our organized directories
                 step3_stats = self.heatmap_analyzer.analyze_subject(
                     csv_path=str(output_paths['final_csv']),
-                    output_dir=str(self.figures_dir),  # Send images to figures directory
+                    output_dir=str(self.figures_dir),
                     subject_name=subject_name
                 )
                 
-                # Also save statistics to logs directory
+                # Save statistics JSON
                 if step3_stats.get('success', False) and step3_stats.get('statistics'):
-                    stats_file = output_paths['gaze_stats']
-                    try:
-                        with open(stats_file, 'w') as f:
-                            json.dump(step3_stats['statistics'], f, indent=2, default=str)
-                        logger.info(f"Gaze statistics saved to: {stats_file}")
-                    except Exception as e:
-                        logger.warning(f"Warning: Could not save gaze statistics: {e}")
+                    with open(output_paths['gaze_stats'], 'w') as f:
+                        json.dump(step3_stats['statistics'], f, indent=2, default=str)
                 
-                if step3_stats.get('success', False):
-                    result['step3_stats'] = step3_stats
-                    num_visualizations = len(step3_stats.get('visualizations_created', []))
-                    valid_gaze_count = step3_stats.get('statistics', {}).get('filtered_samples', 0)
-                    logger.info(f"Step 3 completed: {num_visualizations} visualizations created ({valid_gaze_count:,} gaze points)")
-                else:
-                    logger.warning(f"Step 3 warning: {step3_stats.get('error', 'Could not create visualizations')}")
-                    # Don't fail the entire process if only visualizations fail
-                    result['step3_stats'] = step3_stats
+                result['step3_stats'] = step3_stats
 
-            # Step 4: Whole-Session Analysis (Physics-based metrics)
-            analyzer = None  # Initialize for potential use in Step 5
+            # === STEP 4: Scientific Analysis (Goals A-D) ===
+            # Calculates skill metrics like fixation rate, cognitive load, etc.
+            analyzer = None
             if self.config.get('run_whole_session_analysis', True):
                 logger.info(f"Step 4: Running whole-session analysis...")
 
@@ -409,9 +373,8 @@ class EnhancedBatchProcessor:
                     )
 
                     # Save analysis results to JSON
-                    analysis_file = output_paths['whole_session_analysis']
-                    with open(analysis_file, 'w') as f:
-                        # Convert any numpy types to Python types for JSON
+                    with open(output_paths['whole_session_analysis'], 'w') as f:
+                        # Helper to handle numpy types in JSON
                         def convert_to_serializable(obj):
                             if isinstance(obj, dict):
                                 return {k: convert_to_serializable(v) for k, v in obj.items()}
@@ -427,27 +390,15 @@ class EnhancedBatchProcessor:
                         json.dump(convert_to_serializable(step4_stats), f, indent=2)
 
                     result['step4_stats'] = step4_stats
-                    logger.info(f"Step 4 completed: Whole-session analysis saved")
-                    logger.info(f"  Recording duration: {step4_stats.get('recording_duration_s', 0):.1f} s")
-
-                    # Log key metrics
-                    goal_a = step4_stats.get('goal_a_oculometric_efficiency', {})
-                    goal_b = step4_stats.get('goal_b_cognitive_load', {})
-                    goal_c = step4_stats.get('goal_c_motor_stability', {})
-
-                    if goal_a:
-                        logger.info(f"  Fixation rate: {goal_a.get('fixation_rate_hz', 0):.2f} Hz")
-                    if goal_b:
-                        logger.info(f"  Pupil residual: {goal_b.get('mean_residual', 0):.4f} mm")
-                    if goal_c:
-                        logger.info(f"  Total head rotation: {goal_c.get('total_rotation_deg', 0):.1f} deg")
+                    logger.info(f"Step 4 completed: Analysis saved")
 
                 except Exception as e:
-                    logger.warning(f"Step 4 warning: Could not complete whole-session analysis: {e}")
+                    logger.warning(f"Step 4 warning: {e}")
                     result['step4_stats'] = {'error': str(e)}
-                    analyzer = None  # Ensure analyzer is None if step 4 failed
+                    analyzer = None
 
-            # Step 5: Generate clinical visualizations
+            # === STEP 5: Clinical Dashboards ===
+            # Generates the Radar Charts and Stress Timelines
             if self.config.get('run_whole_session_analysis', True) and analyzer is not None:
                 logger.info(f"Step 5: Generating clinical visualizations...")
 
@@ -457,20 +408,13 @@ class EnhancedBatchProcessor:
                         output_dir=str(self.figures_dir),
                         subject_name=subject_name
                     )
-
                     result['step5_stats'] = step5_stats
-                    num_viz = len(step5_stats.get('created', {}))
-                    logger.info(f"Step 5 completed: {num_viz} visualizations created")
-
-                    if step5_stats.get('errors'):
-                        for err in step5_stats['errors']:
-                            logger.warning(f"  Visualization error: {err}")
+                    logger.info(f"Step 5 completed")
 
                 except Exception as e:
-                    logger.warning(f"Step 5 warning: Could not create visualizations: {e}")
+                    logger.warning(f"Step 5 warning: {e}")
                     result['step5_stats'] = {'error': str(e)}
 
-            # Mark as successful if we got through at least steps 1 and 2
             result['status'] = 'success'
         
         except Exception as e:
@@ -478,38 +422,19 @@ class EnhancedBatchProcessor:
             logger.error(f"Processing failed: {e}")
             logger.exception("Traceback:")
         
-        # Calculate processing time
         result['processing_time'] = time.time() - subject_start_time
-        
-        # Save processing log
         save_processing_log(result, output_paths['processing_log'])
         
         return result
     
     def run(self):
         """
-        Run the enhanced batch processing for all discovered subjects.
-        
-        Returns:
-            dict: Overall processing results
+        Main execution method. Iterates through all found subjects.
         """
         self.start_time = datetime.now()
-        logger.info("Starting enhanced batch processing with heatmap generation and skip list...")
-        logger.info(f"Start time: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info("Starting batch processing...")
         
-        if self.config['generate_heatmaps']:
-            logger.info("Heatmap generation: ENABLED")
-        else:
-            logger.info("Heatmap generation: DISABLED")
-        
-        # Show skip list information
-        skip_list = self.config.get('subjects_to_skip', [])
-        if skip_list:
-            logger.info(f"Skip list: ENABLED ({len(skip_list)} subjects)")
-        else:
-            logger.info("Skip list: DISABLED")
-        
-        # Discover subject folders
+        # Discover folders
         subject_folders, self.skipped_subjects = discover_subject_folders(
             self.config['input_base_dir'],
             self.config['video_filename'],
@@ -520,96 +445,43 @@ class EnhancedBatchProcessor:
         
         if not subject_folders:
             logger.warning("No valid subject folders found. Exiting.")
-            return {'success': False, 'error': 'No valid subject folders found'}
+            return {'success': False}
         
         self.total_subjects = len(subject_folders)
         
-        # Process each subject
+        # Process loop
         for i, subject_folder in enumerate(subject_folders, 1):
-            logger.info(f"\n{'='*70}")
-            logger.info(f"Processing subject {i}/{self.total_subjects}")
-            logger.info(f"{'='*70}")
+            logger.info(f"\nProcessing subject {i}/{self.total_subjects}")
             
             result = self.process_single_subject(subject_folder)
             self.results.append(result)
 
-            # Update counters
             if result['status'] == 'success':
                 self.successful_subjects += 1
             elif result['status'] == 'failed':
                 self.failed_subjects += 1
 
-            # Free memory between subjects
+            # Clean up memory
             gc.collect()
 
-        # Create summary report
+        # Generate final summary report
         create_summary_report(
             self.config, self.results, self.skipped_subjects, self.total_subjects,
             self.successful_subjects, self.failed_subjects, self.start_time,
             self.logs_dir, self.figures_dir, self.processed_data_dir
         )
         
-        # Calculate heatmap statistics
-        heatmap_successes = sum(1 for r in self.results
-                               if r.get('step3_stats', {}).get('success', False))
-
-        # Calculate whole-session analysis statistics
-        ws_successes = sum(1 for r in self.results
-                          if r.get('step4_stats') and not r.get('step4_stats', {}).get('error'))
-
-        # Calculate clinical visualization statistics
-        viz_successes = sum(1 for r in self.results
-                           if r.get('step5_stats', {}).get('success', False))
-
-        # Print final summary
-        logger.info(f"ENHANCED BATCH PROCESSING COMPLETE!")
-        logger.info(f"{'='*70}")
-        logger.info(f"Total subjects discovered: {self.total_subjects + self.skipped_subjects}")
-        logger.info(f"Subjects processed: {self.total_subjects}")
-        logger.info(f"Successful: {self.successful_subjects}")
-        logger.info(f"Failed: {self.failed_subjects}")
-        if self.skipped_subjects > 0:
-            logger.info(f"Skipped (skip list): {self.skipped_subjects}")
-        skipped_existing = self.total_subjects - self.successful_subjects - self.failed_subjects
-        if skipped_existing > 0:
-            logger.info(f"Skipped (existing outputs): {skipped_existing}")
-        logger.info(f"Success rate: {(self.successful_subjects / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%")
-
-        if self.config['generate_heatmaps']:
-            logger.info(f"Heatmaps created: {heatmap_successes}/{self.total_subjects} ({(heatmap_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
-
-        if self.config.get('run_whole_session_analysis', True):
-            logger.info(f"Whole-session analysis: {ws_successes}/{self.total_subjects} ({(ws_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
-            logger.info(f"Clinical visualizations: {viz_successes}/{self.total_subjects} ({(viz_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
-
-        logger.info(f"Total time: {time.time() - self.start_time.timestamp():.1f} seconds")
-        logger.info(f"Results organized in: {self.output_root}")
-        logger.info(f"  - Images: {self.figures_dir}")
-        logger.info(f"  - Logs: {self.logs_dir}")
-        logger.info(f"  - Processed Data: {self.processed_data_dir}")
-        
+        logger.info(f"BATCH PROCESSING COMPLETE")
         return {
             'success': True,
             'total_subjects': self.total_subjects,
-            'successful_subjects': self.successful_subjects,
-            'failed_subjects': self.failed_subjects,
-            'skipped_subjects_skip_list': self.skipped_subjects,
-            'heatmap_successes': heatmap_successes,
-            'whole_session_successes': ws_successes,
-            'visualization_successes': viz_successes,
-            'results': self.results
+            'successful_subjects': self.successful_subjects
         }
 
 
 def batch_process_subjects(config=None):
     """
-    Convenience function for enhanced batch processing subjects.
-    
-    Args:
-        config (dict): Configuration dictionary
-        
-    Returns:
-        dict: Processing results
+    Wrapper function to run the batch processor easily.
     """
     processor = EnhancedBatchProcessor(config)
     return processor.run()
@@ -617,83 +489,34 @@ def batch_process_subjects(config=None):
 
 def main():
     """
-    Main function for command line execution.
+    Command-line entry point.
     """
     try:
-        # --- Find project paths automatically ---
+        # Load or create config
         script_path = Path(__file__).resolve()
-        src_dir = script_path.parent
-        project_root = src_dir.parent
-
-        logger.info(f"Script location: {script_path}")
-        logger.info(f"Source directory: {src_dir}")
-        logger.info(f"Project root: {project_root}")
-
-        # Load configuration from file
+        project_root = script_path.parent.parent
         config_path = project_root / 'config.json'
+
         if not config_path.exists():
-            logger.warning(f"Configuration file not found at {config_path}. Creating a default one.")
+            # Create default config if missing
             default_config_data = {
                 "input_base_dir": "data/raw",
                 "subjects_to_skip": [],
-                "subject_folder_pattern": "*",
-                "skip_existing": True,
                 "generate_heatmaps": True,
-                "create_summary_report": True,
-                "heatmap_config": {
-                    "figure_size": [12, 8],
-                    "dpi": 300,
-                    "color_scheme": "viridis"
-                },
-                "processing_options": {
-                    "show_video": False
-                }
+                "create_summary_report": True
             }
             with open(config_path, 'w') as f:
                 json.dump(default_config_data, f, indent=4)
-            logger.info(f"Default config.json created at {config_path}")
 
         with open(config_path, 'r') as f:
             config = json.load(f)
 
-        # Set the input directory dynamically
-        input_dir = project_root / config.get('input_base_dir', 'data/raw')
-        config['input_base_dir'] = input_dir
-
-        # Verify the input directory exists
-        if not input_dir.exists():
-            logger.error(f"ERROR: Input directory does not exist: {input_dir}")
-            logger.error(f"Please ensure your raw data is in: {input_dir}")
-            return False
-        
-        logger.info(f"Input directory confirmed: {input_dir}")
-
-        logger.info(f"Configuration loaded from: {config_path}")
-        logger.info(f"  Input (raw data): {config['input_base_dir']}")
-        logger.info(f"  Output (results):")
-        logger.info(f"    - Processed data: {project_root}/data/processed/")
-        logger.info(f"    - Figures: {project_root}/reports/figures/")
-        logger.info(f"    - Logs: {project_root}/reports/logs/")
-
-        # Show skip list information
-        skip_list = config.get('subjects_to_skip', [])
-        if skip_list:
-            logger.info(f"  Skip list: {len(skip_list)} subjects will be skipped: {skip_list}")
-        else:
-            logger.info(f"  Skip list: No subjects to skip (empty list)")
-
+        # Run
         results = batch_process_subjects(config)
-        
-        if results and results.get('success'):
-            logger.info(f"Enhanced batch processing completed successfully!")
-            return True
-        else:
-            logger.warning(f"Enhanced batch processing failed or had issues.")
-            return False
+        return results.get('success', False)
             
     except Exception as e:
-        logger.critical(f"An unexpected error occurred in main: {e}")
-        logger.exception("Traceback:")
+        logger.critical(f"An unexpected error occurred: {e}")
         return False
 
 
