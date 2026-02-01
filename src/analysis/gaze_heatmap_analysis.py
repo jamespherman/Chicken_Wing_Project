@@ -13,8 +13,14 @@ Features:
 - Individual and comparative analysis
 """
 
+# Import scipy BEFORE matplotlib/seaborn to avoid BLAS threading deadlock
+from scipy import stats
+from scipy.ndimage import gaussian_filter
+
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
@@ -22,8 +28,6 @@ import warnings
 from datetime import datetime
 import json
 import traceback
-from scipy import stats
-from scipy.ndimage import gaussian_filter
 from ..logging_config import get_logger
 
 logger = get_logger(__name__)

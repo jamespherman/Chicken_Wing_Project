@@ -1,0 +1,32 @@
+ENHANCED BATCH PROCESSING SUMMARY
+============================================================
+Generated at: 2026-01-31 18:12:45
+============================================================
+
+Total subjects discovered: 15
+Subjects processed: 14
+Successful (all steps): 14
+Failed: 0
+Skipped (skip list): 1
+Skipped (existing outputs): 0
+Overall success rate: 100.0%
+
+SKIP LIST INFORMATION:
+----------------------------------------
+Skip list enabled: Yes
+Subjects in skip list: 1
+Skip list contents: 20231012T122519Z
+Subjects actually skipped: 1
+
+Heatmap visualizations created: 14/14
+Heatmap success rate: 100.0%
+Total gaze points analyzed: 913,398
+
+OUTPUT DIRECTORY STRUCTURE:
+----------------------------------------
+All images (.png): D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures
+All logs (.txt, .json): D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\logs
+All processed data: D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed
+
+INDIVIDUAL RESULTS:
+----------------------------------------

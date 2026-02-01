@@ -196,7 +196,11 @@ def _process_frame_chunk(args):
     }
 
     # --- Process frames in the assigned chunk ---
-    for frame_index in range(start_frame, end_frame):
+    frame_range = range(start_frame, end_frame)
+    # Only show tqdm progress for single-worker mode (when processing entire video in one chunk)
+    if end_frame - start_frame > 1000:
+        frame_range = tqdm(frame_range, desc=f"Processing frames", leave=False)
+    for frame_index in frame_range:
         ret, frame = cap.read()
         if not ret:
             break
@@ -248,7 +252,7 @@ def _process_frame_chunk(args):
                     if 0 <= tx < output_width and 0 <= ty < output_height:
                         transformed_gaze_x, transformed_gaze_y = tx, ty
                         stats['frames_with_gaze'] += 1
-                        cv2.circle(corrected_frame, (tx, ty), 15, (0, 0, 255), -1)
+                        cv2.circle(corrected_frame, (int(tx), int(ty)), 15, (0, 0, 255), -1)
 
             chunk_video_frames.append(corrected_frame)
         else:
@@ -301,8 +305,8 @@ def process_gaze_with_perspective_correction(
     chunk_size = math.ceil(total_frames / num_workers)
     chunks = [(i, i * chunk_size, min((i + 1) * chunk_size, total_frames)) for i in range(num_workers)]
     
-    logger.info(f"Starting parallel processing with {num_workers} workers, {len(chunks)} chunks...")
-    
+    logger.info(f"Starting processing with {num_workers} workers, {len(chunks)} chunks...")
+
     # --- Prepare arguments for each worker ---
     processing_args = [
         (video_path, chunk_index, start, end, gaze_data,
@@ -310,10 +314,14 @@ def process_gaze_with_perspective_correction(
          target_markers, use_preselected_parameters, use_frame_preprocessing, use_outer_points)
         for chunk_index, start, end in chunks
     ]
-    
-    # --- Run multiprocessing pool ---
-    with multiprocessing.Pool(processes=num_workers) as pool:
-        results = list(tqdm(pool.imap_unordered(_process_frame_chunk, processing_args), total=len(chunks), desc="Processing chunks"))
+
+    # --- Run processing (sequential for num_workers=1 to avoid Windows multiprocessing issues) ---
+    if num_workers == 1:
+        logger.info("Using sequential processing mode (single worker)")
+        results = [_process_frame_chunk(args) for args in tqdm(processing_args, desc="Processing chunks")]
+    else:
+        with multiprocessing.Pool(processes=num_workers) as pool:
+            results = list(tqdm(pool.imap_unordered(_process_frame_chunk, processing_args), total=len(chunks), desc="Processing chunks"))
 
     # --- Sort results by chunk index to maintain order ---
     results.sort(key=lambda x: x[0])

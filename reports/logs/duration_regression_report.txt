@@ -1,0 +1,191 @@
+================================================================================
+COMPREHENSIVE REGRESSION ANALYSIS REPORT
+Predicting Recording Duration from Oculometric Metrics
+================================================================================
+Generated: 2026-02-01
+Analysis: Regularized Linear Regression (Lasso and Ridge)
+
+================================================================================
+1. DATA SUMMARY
+================================================================================
+
+Total subjects in cohort:     14
+Excluded as outlier:          20251029T131758Z (21.9 seconds - too short)
+Subjects in analysis:         13
+Duration range:               4.1 - 21.2 minutes (245 - 1273 seconds)
+Mean duration:                11.9 minutes
+Features analyzed:            18 oculometric metrics
+
+Exclusion rationale: The 22-second recording was a statistical outlier that
+acted as a massive leverage point, creating spurious correlations. Many
+correlations that appeared significant (r > 0.5) with n=14 disappeared or
+reversed when this single point was removed.
+
+================================================================================
+2. FEATURES EXCLUDED AS TAUTOLOGICAL
+================================================================================
+
+The following features were excluded because they are directly proportional
+to recording duration (more time = higher values by definition):
+
+  - saccade_count:      Total number of saccades (more time → more saccades)
+  - fixation_count:     Total number of fixations (more time → more fixations)
+  - n_samples:          Total gaze samples (more time → more samples)
+  - total_rotation_deg: Integrated head rotation (more time → more rotation)
+
+These would artificially inflate model R² without providing insight.
+
+================================================================================
+3. MODEL RESULTS
+================================================================================
+
+LASSO REGRESSION (sparse feature selection)
+-------------------------------------------
+  Alpha (regularization):    34.3
+  R² (in-sample):            0.659
+  RMSE:                      3.0 minutes (180.7 seconds)
+  Features selected:         5 out of 18 (72% shrunk to zero)
+
+RIDGE REGRESSION (dense, all features)
+--------------------------------------
+  R² (in-sample):            0.739
+  (All 18 features retained with small coefficients)
+
+Model selection: Lasso is preferred for interpretability - it identifies the
+most predictive features while shrinking irrelevant ones to exactly zero.
+
+================================================================================
+4. LASSO-SELECTED FEATURES (5 predictors)
+================================================================================
+
+These 5 features were selected by Lasso as the most predictive of recording
+duration, after controlling for multicollinearity through regularization:
+
+PREDICTORS OF LONGER RECORDINGS:
+--------------------------------
+
+1. raw_pupil_std (+96.1)
+   Pearson r: +0.369 (p=0.215)
+   Interpretation: Greater pupil diameter variability is associated with
+   longer recordings. This may reflect more diverse cognitive states or
+   lighting conditions across extended sessions.
+
+2. regression_r_squared (+59.9)
+   Pearson r: +0.483 (p=0.095)
+   Interpretation: Stronger coupling between frame luminance and pupil
+   diameter predicts longer recordings. This suggests better data quality
+   or more consistent pupillary light reflex in longer sessions.
+
+PREDICTORS OF SHORTER RECORDINGS:
+---------------------------------
+
+3. mean_residual (-94.3)
+   Pearson r: -0.582 (p=0.037) *SIGNIFICANT*
+   Interpretation: Higher mean pupil residual (after luminance correction)
+   predicts shorter recordings. This is the only statistically significant
+   predictor. Elevated residuals may indicate cognitive load or arousal
+   that leads to session termination.
+
+4. luminance_mean (-68.7)
+   Pearson r: -0.414 (p=0.159)
+   Interpretation: Brighter average scene luminance predicts shorter
+   recordings. This could reflect different surgical phases or lighting
+   conditions in brief vs extended procedures.
+
+5. rotation_rate_std (-58.3)
+   Pearson r: -0.242 (p=0.425)
+   Interpretation: More variable head movement predicts shorter recordings.
+   Unstable head motion may indicate difficulty or discomfort leading to
+   earlier session termination.
+
+================================================================================
+5. UNSELECTED FEATURES (13 features shrunk to zero)
+================================================================================
+
+The following features were NOT selected by Lasso, meaning they did not
+provide additional predictive value beyond the 5 selected features:
+
+  Feature                          Correlation with Duration
+  ----------------------------------------------------------------
+  regression_slope                 r = +0.411 (p=0.163)
+  std_residual                     r = +0.313 (p=0.297)
+  gyro_y_mean                      r = -0.211 (p=0.489)
+  saccade_proportion               r = -0.201 (p=0.511)
+  fixation_proportion              r = +0.188 (p=0.538)
+  fixation_rate_hz                 r = -0.154 (p=0.615)
+  rotation_rate_per_second         r = -0.129 (p=0.674)
+  mean_rotation_rate               r = -0.110 (p=0.720)
+  gyro_z_mean                      r = -0.100 (p=0.744)
+  rotation_rate_max                r = -0.095 (p=0.757)
+  gyro_x_mean                      r = -0.079 (p=0.797)
+  mean_fixation_duration_ms        r = +0.072 (p=0.815)
+  raw_pupil_mean                   r = +0.030 (p=0.922)
+
+Note: Many of these showed strong correlations (r > 0.5) when the 22-second
+outlier was included, demonstrating how a single extreme point can create
+misleading associations.
+
+================================================================================
+6. KEY FINDINGS
+================================================================================
+
+1. OUTLIER IMPACT: A single 22-second recording severely distorted the
+   correlation structure. Always check for extreme outliers in small samples.
+
+2. SPARSE SOLUTION: Only 5 of 18 oculometric features predict duration,
+   suggesting most metrics are independent of recording length (desirable
+   for skill assessment).
+
+3. PUPIL METRICS DOMINATE: 3 of 5 selected features relate to pupil
+   dynamics (raw_pupil_std, mean_residual, regression_r_squared).
+
+4. ONLY ONE SIGNIFICANT CORRELATION: mean_residual (r=-0.58, p=0.037)
+   is the only feature with p < 0.05. All others are exploratory.
+
+5. MODERATE PREDICTION: R²=0.66 means ~66% of duration variance is
+   explained by these 5 features, but with n=13 this is likely optimistic.
+
+================================================================================
+7. LIMITATIONS
+================================================================================
+
+1. SMALL SAMPLE SIZE: n=13 provides limited statistical power. These
+   findings should be considered hypothesis-generating, not confirmatory.
+
+2. OVERFITTING RISK: With 18 features and 13 subjects, even regularized
+   models may overfit. Cross-validated R² was not stable.
+
+3. NO CROSS-VALIDATION: Leave-one-out CV produced unstable estimates.
+   More subjects needed for reliable out-of-sample performance.
+
+4. CAUSALITY UNKNOWN: These are correlational findings. We cannot determine
+   whether these metrics CAUSE sessions to be longer/shorter or simply
+   CO-OCCUR with duration.
+
+================================================================================
+8. RECOMMENDATIONS
+================================================================================
+
+1. Collect more subjects (target n≥30) before drawing firm conclusions.
+
+2. Consider the 22-second recording - why was it so short? Equipment
+   failure? Aborted procedure? This context matters for interpretation.
+
+3. For skill assessment, the finding that most oculometric metrics are
+   INDEPENDENT of duration is reassuring - they measure behavior, not
+   just session length.
+
+4. The mean_residual finding (p=0.037) warrants further investigation
+   as a potential indicator of cognitive state affecting session duration.
+
+================================================================================
+9. OUTPUT FILES
+================================================================================
+
+  Comprehensive figure:  reports/figures/duration_regression_comprehensive.png
+  Analysis results:      reports/logs/duration_regression_analysis.json
+  This report:           reports/logs/duration_regression_report.txt
+
+================================================================================
+END OF REPORT
+================================================================================

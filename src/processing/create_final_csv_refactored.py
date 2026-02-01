@@ -389,6 +389,11 @@ def process_gaze_stream_enhanced(
         prev_gaze_dir = gaze_dir
         prev_timestamp = gaze_timestamp
 
+        # Extract gaze direction components for amplitude calculation
+        gaze_dir_x = gaze_dir[0] if gaze_dir is not None else np.nan
+        gaze_dir_y = gaze_dir[1] if gaze_dir is not None else np.nan
+        gaze_dir_z = gaze_dir[2] if gaze_dir is not None else np.nan
+
         yield {
             'gaze_timestamp': gaze_timestamp,
             'transformed_gaze_x': transformed_x,
@@ -396,6 +401,9 @@ def process_gaze_stream_enhanced(
             'active_frame_index': active_frame_index if active_frame_index is not None else np.nan,
             'active_frame_time': active_frame_time if active_frame_time is not None else np.nan,
             'angular_velocity_deg_s': angular_velocity,
+            'gaze_direction_x': gaze_dir_x,
+            'gaze_direction_y': gaze_dir_y,
+            'gaze_direction_z': gaze_dir_z,
             'pupil_diameter_left': left_pupil if left_pupil is not None else np.nan,
             'pupil_diameter_right': right_pupil if right_pupil is not None else np.nan,
             'pupil_diameter_avg': avg_pupil if not np.isnan(avg_pupil) else np.nan,
@@ -418,6 +426,9 @@ def _create_empty_record(timestamp):
         'active_frame_index': np.nan,
         'active_frame_time': np.nan,
         'angular_velocity_deg_s': np.nan,
+        'gaze_direction_x': np.nan,
+        'gaze_direction_y': np.nan,
+        'gaze_direction_z': np.nan,
         'pupil_diameter_left': np.nan,
         'pupil_diameter_right': np.nan,
         'pupil_diameter_avg': np.nan,
@@ -449,6 +460,7 @@ def save_stream_to_csv(processed_data_stream, output_file_path):
             columns = [
                 'gaze_timestamp', 'transformed_gaze_x', 'transformed_gaze_y',
                 'active_frame_index', 'active_frame_time', 'angular_velocity_deg_s',
+                'gaze_direction_x', 'gaze_direction_y', 'gaze_direction_z',
                 'pupil_diameter_left', 'pupil_diameter_right', 'pupil_diameter_avg',
                 'frame_luminance', 'head_gyro_x', 'head_gyro_y', 'head_gyro_z'
             ]
@@ -469,6 +481,7 @@ def save_stream_to_csv(processed_data_stream, output_file_path):
         total_records = len(df)
         valid_transformations = df['transformed_gaze_x'].notna().sum()
         valid_angular = df['angular_velocity_deg_s'].notna().sum()
+        valid_gaze_dir = df['gaze_direction_x'].notna().sum()
         valid_pupil = df['pupil_diameter_avg'].notna().sum()
         valid_imu = df['head_gyro_x'].notna().sum()
         valid_luminance = df['frame_luminance'].notna().sum()
@@ -480,6 +493,8 @@ def save_stream_to_csv(processed_data_stream, output_file_path):
             'valid_percentage': (valid_transformations / total_records) * 100 if total_records > 0 else 0,
             'valid_angular_velocity': int(valid_angular),
             'valid_angular_velocity_pct': (valid_angular / total_records) * 100 if total_records > 0 else 0,
+            'valid_gaze_direction': int(valid_gaze_dir),
+            'valid_gaze_direction_pct': (valid_gaze_dir / total_records) * 100 if total_records > 0 else 0,
             'valid_pupil': int(valid_pupil),
             'valid_pupil_pct': (valid_pupil / total_records) * 100 if total_records > 0 else 0,
             'valid_imu': int(valid_imu),
@@ -491,6 +506,7 @@ def save_stream_to_csv(processed_data_stream, output_file_path):
         logger.info(f"Saved {total_records} records to {output_file_path}")
         logger.info(f"  Valid transformations: {stats['valid_transformations']} ({stats['valid_percentage']:.1f}%)")
         logger.info(f"  Valid angular velocity: {stats['valid_angular_velocity']} ({stats['valid_angular_velocity_pct']:.1f}%)")
+        logger.info(f"  Valid gaze direction: {stats['valid_gaze_direction']} ({stats['valid_gaze_direction_pct']:.1f}%)")
         logger.info(f"  Valid pupil data: {stats['valid_pupil']} ({stats['valid_pupil_pct']:.1f}%)")
         logger.info(f"  Valid IMU data: {stats['valid_imu']} ({stats['valid_imu_pct']:.1f}%)")
         logger.info(f"  Valid luminance: {stats['valid_luminance']} ({stats['valid_luminance_pct']:.1f}%)")

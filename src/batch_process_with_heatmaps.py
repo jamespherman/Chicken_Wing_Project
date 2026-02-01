@@ -19,6 +19,7 @@ Or import and use programmatically:
 import os
 import sys
 import time
+import gc
 from pathlib import Path
 from datetime import datetime
 import json
@@ -36,6 +37,7 @@ try:
     from .processing.create_final_csv_refactored import create_final_gaze_csv
     from .analysis.gaze_heatmap_analysis import GazeHeatmapAnalyzer
     from .analysis.whole_session_analysis import WholeSessionAnalyzer
+    from .analysis.visualizations import GazeVisualizer
     from .processing.batch_processing.subject_discovery import discover_subject_folders
     from .processing.batch_processing.reporting import save_processing_log, create_summary_report
 except ImportError as e:
@@ -88,6 +90,9 @@ class EnhancedBatchProcessor:
             self.heatmap_analyzer = GazeHeatmapAnalyzer(self.config['heatmap_config'])
         else:
             self.heatmap_analyzer = None
+
+        # Initialize gaze visualizer for clinical visualizations
+        self.gaze_visualizer = GazeVisualizer(self.config.get('visualization_config', {}))
 
     def _load_base_config(self):
         """
@@ -222,33 +227,51 @@ class EnhancedBatchProcessor:
             'scatter_png': self.figures_dir / f"{subject_name}_scatter.png",
             'contour_png': self.figures_dir / f"{subject_name}_contour.png",
             'dashboard_png': self.figures_dir / f"{subject_name}_dashboard.png",
+            # Clinical visualization paths
+            'viz_cognitive_fingerprint': self.figures_dir / f"{subject_name}_viz_cognitive_fingerprint.png",
+            'viz_main_sequence': self.figures_dir / f"{subject_name}_viz_main_sequence.png",
+            'viz_stress_timeline': self.figures_dir / f"{subject_name}_viz_stress_timeline.png",
+            'viz_stability_radar': self.figures_dir / f"{subject_name}_viz_stability_radar.png",
         }
-        
+
         return outputs
     
     def check_existing_outputs(self, output_paths):
         """
         Check if outputs already exist for a subject.
-        
+
         Args:
             output_paths (dict): Dictionary of output file paths
-            
+
         Returns:
-            bool: True if final output exists and skip_existing is enabled
+            bool: True if ALL outputs exist and skip_existing is enabled
         """
         if not self.config['skip_existing']:
             return False
-        
+
         final_csv = output_paths['final_csv']
         dashboard_png = output_paths['dashboard_png']
-        
+
         # Check if both CSV and main visualization exist
-        if final_csv.exists():
-            if not self.config['generate_heatmaps'] or dashboard_png.exists():
-                logger.info(f"Skipping: Outputs already exist")
-                return True
-        
-        return False
+        if not final_csv.exists():
+            return False
+
+        if self.config['generate_heatmaps'] and not dashboard_png.exists():
+            return False
+
+        # Check if clinical visualizations exist (if whole-session analysis enabled)
+        if self.config.get('run_whole_session_analysis', True):
+            viz_files = [
+                output_paths['viz_cognitive_fingerprint'],
+                output_paths['viz_main_sequence'],
+                output_paths['viz_stress_timeline'],
+                output_paths['viz_stability_radar'],
+            ]
+            if not all(f.exists() for f in viz_files):
+                return False
+
+        logger.info(f"Skipping: Outputs already exist")
+        return True
     
     def process_single_subject(self, subject_folder):
         """
@@ -293,41 +316,51 @@ class EnhancedBatchProcessor:
         
         try:
             # Step 1: Process gaze with perspective correction
-            logger.info(f"Step 1: Processing video with gaze data...")
-            
-            step1_stats = process_gaze_with_perspective_correction(
-                video_path=str(subject_folder / self.config['video_filename']),
-                gaze_file_path=str(subject_folder / self.config['gaze_filename']),
-                output_video_path=str(output_paths['corrected_video']),
-                csv_output_path=str(output_paths['intermediate_csv']),
-                transformation_history_path=str(output_paths['transformation_history']),
-                output_width=self.config['output_width'],
-                output_height=self.config['output_height'],
-                target_markers=self.config['target_markers'],
-                **self.config['processing_options']
-            )
-            
-            result['step1_stats'] = step1_stats
-            logger.info(f"Step 1 completed: {step1_stats['frames_with_valid_homography']} frames with valid homography")
-            
+            transformation_exists = output_paths['transformation_history'].exists()
+            if transformation_exists:
+                logger.info(f"Step 1: Skipping (transformation history exists)")
+                result['step1_stats'] = {'skipped': True, 'reason': 'transformation_history exists'}
+            else:
+                logger.info(f"Step 1: Processing video with gaze data...")
+
+                step1_stats = process_gaze_with_perspective_correction(
+                    video_path=str(subject_folder / self.config['video_filename']),
+                    gaze_file_path=str(subject_folder / self.config['gaze_filename']),
+                    output_video_path=str(output_paths['corrected_video']),
+                    csv_output_path=str(output_paths['intermediate_csv']),
+                    transformation_history_path=str(output_paths['transformation_history']),
+                    output_width=self.config['output_width'],
+                    output_height=self.config['output_height'],
+                    target_markers=self.config['target_markers'],
+                    **self.config['processing_options']
+                )
+
+                result['step1_stats'] = step1_stats
+                logger.info(f"Step 1 completed: {step1_stats['frames_with_valid_homography']} frames with valid homography")
+
             # Step 2: Create final high-resolution CSV
-            logger.info(f"Step 2: Creating final high-resolution gaze CSV...")
-            
-            step2_stats = create_final_gaze_csv(
-                gaze_file_path=str(subject_folder / self.config['gaze_filename']),
-                transformation_history_path=str(output_paths['transformation_history']),
-                output_csv_path=str(output_paths['final_csv']),
-                frame_width=self.config['frame_width'],
-                frame_height=self.config['frame_height']
-            )
-            
-            if not step2_stats or not step2_stats.get('success', False):
-                result['error_message'] = "Step 2 failed: Could not create final CSV"
-                logger.error(f"Step 2 failed: Could not create final CSV")
-                return result
-            
-            result['step2_stats'] = step2_stats
-            logger.info(f"Step 2 completed: {step2_stats['valid_transformations']} valid transformations ({step2_stats['valid_percentage']:.1f}%)")
+            final_csv_exists = output_paths['final_csv'].exists()
+            if final_csv_exists:
+                logger.info(f"Step 2: Skipping (final CSV exists)")
+                result['step2_stats'] = {'skipped': True, 'success': True, 'reason': 'final_csv exists'}
+            else:
+                logger.info(f"Step 2: Creating final high-resolution gaze CSV...")
+
+                step2_stats = create_final_gaze_csv(
+                    gaze_file_path=str(subject_folder / self.config['gaze_filename']),
+                    transformation_history_path=str(output_paths['transformation_history']),
+                    output_csv_path=str(output_paths['final_csv']),
+                    frame_width=self.config['frame_width'],
+                    frame_height=self.config['frame_height']
+                )
+
+                if not step2_stats or not step2_stats.get('success', False):
+                    result['error_message'] = "Step 2 failed: Could not create final CSV"
+                    logger.error(f"Step 2 failed: Could not create final CSV")
+                    return result
+
+                result['step2_stats'] = step2_stats
+                logger.info(f"Step 2 completed: {step2_stats['valid_transformations']} valid transformations ({step2_stats['valid_percentage']:.1f}%)")
             
             # Step 3: Generate heatmap visualizations
             if self.config['generate_heatmaps'] and self.heatmap_analyzer:
@@ -361,6 +394,7 @@ class EnhancedBatchProcessor:
                     result['step3_stats'] = step3_stats
 
             # Step 4: Whole-Session Analysis (Physics-based metrics)
+            analyzer = None  # Initialize for potential use in Step 5
             if self.config.get('run_whole_session_analysis', True):
                 logger.info(f"Step 4: Running whole-session analysis...")
 
@@ -411,6 +445,30 @@ class EnhancedBatchProcessor:
                 except Exception as e:
                     logger.warning(f"Step 4 warning: Could not complete whole-session analysis: {e}")
                     result['step4_stats'] = {'error': str(e)}
+                    analyzer = None  # Ensure analyzer is None if step 4 failed
+
+            # Step 5: Generate clinical visualizations
+            if self.config.get('run_whole_session_analysis', True) and analyzer is not None:
+                logger.info(f"Step 5: Generating clinical visualizations...")
+
+                try:
+                    step5_stats = self.gaze_visualizer.create_all_visualizations(
+                        analyzer=analyzer,
+                        output_dir=str(self.figures_dir),
+                        subject_name=subject_name
+                    )
+
+                    result['step5_stats'] = step5_stats
+                    num_viz = len(step5_stats.get('created', {}))
+                    logger.info(f"Step 5 completed: {num_viz} visualizations created")
+
+                    if step5_stats.get('errors'):
+                        for err in step5_stats['errors']:
+                            logger.warning(f"  Visualization error: {err}")
+
+                except Exception as e:
+                    logger.warning(f"Step 5 warning: Could not create visualizations: {e}")
+                    result['step5_stats'] = {'error': str(e)}
 
             # Mark as successful if we got through at least steps 1 and 2
             result['status'] = 'success'
@@ -474,13 +532,16 @@ class EnhancedBatchProcessor:
             
             result = self.process_single_subject(subject_folder)
             self.results.append(result)
-            
+
             # Update counters
             if result['status'] == 'success':
                 self.successful_subjects += 1
             elif result['status'] == 'failed':
                 self.failed_subjects += 1
-        
+
+            # Free memory between subjects
+            gc.collect()
+
         # Create summary report
         create_summary_report(
             self.config, self.results, self.skipped_subjects, self.total_subjects,
@@ -495,6 +556,10 @@ class EnhancedBatchProcessor:
         # Calculate whole-session analysis statistics
         ws_successes = sum(1 for r in self.results
                           if r.get('step4_stats') and not r.get('step4_stats', {}).get('error'))
+
+        # Calculate clinical visualization statistics
+        viz_successes = sum(1 for r in self.results
+                           if r.get('step5_stats', {}).get('success', False))
 
         # Print final summary
         logger.info(f"ENHANCED BATCH PROCESSING COMPLETE!")
@@ -515,7 +580,8 @@ class EnhancedBatchProcessor:
 
         if self.config.get('run_whole_session_analysis', True):
             logger.info(f"Whole-session analysis: {ws_successes}/{self.total_subjects} ({(ws_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
-        
+            logger.info(f"Clinical visualizations: {viz_successes}/{self.total_subjects} ({(viz_successes / self.total_subjects * 100) if self.total_subjects > 0 else 0:.1f}%)")
+
         logger.info(f"Total time: {time.time() - self.start_time.timestamp():.1f} seconds")
         logger.info(f"Results organized in: {self.output_root}")
         logger.info(f"  - Images: {self.figures_dir}")
@@ -530,6 +596,7 @@ class EnhancedBatchProcessor:
             'skipped_subjects_skip_list': self.skipped_subjects,
             'heatmap_successes': heatmap_successes,
             'whole_session_successes': ws_successes,
+            'visualization_successes': viz_successes,
             'results': self.results
         }
 

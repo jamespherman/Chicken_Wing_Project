@@ -1,0 +1,46 @@
+{
+  "analysis_date": "2026-02-01T07:38:42.283495",
+  "n_subjects": 13,
+  "excluded_outlier": "20251029T131758Z",
+  "duration_range_seconds": [
+    244.722757,
+    1272.742673
+  ],
+  "n_features": 18,
+  "lasso": {
+    "alpha": 34.30469286314919,
+    "r_squared": 0.6586845232451817,
+    "rmse_seconds": 180.70204455401088,
+    "n_selected": 5,
+    "selected_features": {
+      "raw_pupil_std": {
+        "coefficient": 96.13909660364756,
+        "correlation_r": 0.36880651147074356,
+        "correlation_p": 0.2149521009245565
+      },
+      "mean_residual": {
+        "coefficient": -94.33259901427948,
+        "correlation_r": -0.5822597975666863,
+        "correlation_p": 0.036804634033534414
+      },
+      "luminance_mean": {
+        "coefficient": -68.70116756469207,
+        "correlation_r": -0.4142058851730678,
+        "correlation_p": 0.15939097901416568
+      },
+      "regression_r_squared": {
+        "coefficient": 59.867548051222684,
+        "correlation_r": 0.4827940000354077,
+        "correlation_p": 0.0946997178492332
+      },
+      "rotation_rate_std": {
+        "coefficient": -58.320181636260635,
+        "correlation_r": -0.24241565047301938,
+        "correlation_p": 0.4248795757454072
+      }
+    }
+  },
+  "ridge": {
+    "r_squared": 0.7390800046106984
+  }
+}

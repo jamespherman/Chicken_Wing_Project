@@ -1,0 +1,50 @@
+Enhanced Processing Log for 20251029T183522Z
+============================================================
+Processed at: 2026-01-31 18:10:05
+Status: success
+Processing time: 421.73 seconds
+
+Step 1 - Video Processing Stats:
+  total_frames: 15675
+  frames_with_markers: 14638
+  frames_with_valid_homography: 904
+  frames_with_gaze: 13753
+  transformation_history_length: 15675
+
+Step 2 - Final CSV Stats:
+  success: True
+  transformation_records: 15675
+  imu_records: 80390
+  luminance_frames: 15675
+  output_csv_records: 62752
+  valid_transformations: 58833
+  invalid_transformations: 3919
+  valid_percentage: 93.75478072412035
+  valid_angular_velocity: 58709
+  valid_pupil: 59090
+  valid_imu: 62111
+  output_csv_path: D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\20251029T183522Z\20251029T183522Z_final_gaze_data.csv
+  frame_dimensions: (1920, 1080)
+
+Step 3 - Heatmap Analysis Stats:
+  Visualizations created: 4
+  Valid gaze points: 57,703
+  Data quality: 92.0%
+
+Output Files:
+  output_dir: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\20251029T183522Z
+  corrected_video: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\20251029T183522Z\20251029T183522Z_gaze_corrected_video.mp4
+  intermediate_csv: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\20251029T183522Z\20251029T183522Z_gaze_output.csv
+  transformation_history: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\20251029T183522Z\20251029T183522Z_transformation_history.npy
+  final_csv: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\data\processed\20251029T183522Z\20251029T183522Z_final_gaze_data.csv
+  processing_log: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\logs\20251029T183522Z_processing_log.txt
+  gaze_stats: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\logs\20251029T183522Z_gaze_statistics.json
+  whole_session_analysis: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\logs\20251029T183522Z_whole_session_analysis.json
+  heatmap_png: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_heatmap.png
+  scatter_png: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_scatter.png
+  contour_png: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_contour.png
+  dashboard_png: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_dashboard.png
+  viz_cognitive_fingerprint: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_viz_cognitive_fingerprint.png
+  viz_main_sequence: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_viz_main_sequence.png
+  viz_stress_timeline: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_viz_stress_timeline.png
+  viz_stability_radar: Yes D:\OneDrive - University of Pittsburgh\SurgicalCognition\Chicken_Wing_Project\reports\figures\20251029T183522Z_viz_stability_radar.png

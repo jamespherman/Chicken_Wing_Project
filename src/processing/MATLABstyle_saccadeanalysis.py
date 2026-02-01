@@ -76,12 +76,42 @@ class IVTEventClassifier:
 # ---------------------------------------------------------
 # 3. LOAD DATA
 # ---------------------------------------------------------
-gaze_file = '/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231027T170020Z/20231027T170020Z_final_gaze_data.csv'
+gaze_file = '/Users/sachitanand/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofPittsburgh/Herman, James P. - SurgicalCognition/Chicken_Wing_Project/data/processed/20231012T122519Z/20231012T122519Z_final_gaze_data.csv'
 print(f"Loading {gaze_file}...")
 gaze_data = pd.read_csv(gaze_file)
 
+print(f"\nTotal rows loaded: {len(gaze_data)}")
+print(f"\nColumn names in CSV:")
+print(gaze_data.columns.tolist())
+
+print(f"\nFirst few rows:")
+print(gaze_data.head())
+
+print(f"\nData types:")
+print(gaze_data.dtypes)
+
+# Check for the expected columns
+expected_cols = ['transformed_gaze_x', 'transformed_gaze_y', 'gaze_timestamp']
+missing_cols = [col for col in expected_cols if col not in gaze_data.columns]
+
+if missing_cols:
+    print(f"\nERROR: Missing expected columns: {missing_cols}")
+    print("\nPlease check your CSV file column names.")
+    exit()
+
+# Check for NaN values before dropping
+print(f"\nNaN counts before dropping:")
+print(f"  transformed_gaze_x: {gaze_data['transformed_gaze_x'].isna().sum()}")
+print(f"  transformed_gaze_y: {gaze_data['transformed_gaze_y'].isna().sum()}")
+print(f"  gaze_timestamp: {gaze_data['gaze_timestamp'].isna().sum()}")
+
 gaze_data = gaze_data.dropna(subset=['transformed_gaze_x', 'transformed_gaze_y'])
-print(f"Valid samples: {len(gaze_data)}")
+print(f"\nValid samples after dropping NaNs: {len(gaze_data)}")
+
+if len(gaze_data) == 0:
+    print("\nERROR: No valid data remaining after dropping NaNs!")
+    print("All values in transformed_gaze_x and/or transformed_gaze_y are NaN.")
+    exit()
 
 x = gaze_data['transformed_gaze_x'].values
 y = gaze_data['transformed_gaze_y'].values
@@ -146,83 +176,114 @@ saccade_data["event_id"] = saccade_index_df["event_id"].values
 
 # Select first 5 events
 num_events_to_plot = min(5, len(ivt_events))
-event_ids = sorted(saccade_data["event_id"].unique()[:num_events_to_plot])
 
 
 # ---------------------------------------------------------
-# 6. PLOT ANALYSIS FOR FIRST 5 EVENTS
+# 6. PLOT ANALYSIS FOR FIRST 5 EVENTS (TRANSPOSED + 500ms WINDOW)
 # ---------------------------------------------------------
 print(f"\nAnalyzing first {num_events_to_plot} saccades…")
 
-fig, axes = plt.subplots(num_events_to_plot, 4, figsize=(20, 3*num_events_to_plot))
+# TRANSPOSED: 4 rows (metrics) × num_events columns
+fig, axes = plt.subplots(4, num_events_to_plot, figsize=(4*num_events_to_plot, 12))
 if num_events_to_plot == 1:
-    axes = axes.reshape(1, -1)
+    axes = axes.reshape(-1, 1)
     
-fig.suptitle('Detailed Analysis of Saccade Events (IVT + Robust Velocity + Filtering)',
+fig.suptitle('Detailed Analysis of Saccade Events (IVT + Robust Velocity + Filtering)\n500ms Windows',
              fontsize=16, fontweight='bold')
 
-for idx, event_id in enumerate(event_ids):
-    event = saccade_data[saccade_data['event_id'] == event_id]
-
-    event_x = event['transformed_gaze_x'].values
-    event_y = event['transformed_gaze_y'].values
-    event_t = event['gaze_timestamp'].values
-    event_vel = event['velocity'].values
-
-    # Compute acceleration
-    event_accel = np.gradient(event_vel)
-
-    # Metrics
-    amplitude = np.sqrt((event_x[-1] - event_x[0])**2 + (event_y[-1] - event_y[0])**2)
-    duration = (event_t[-1] - event_t[0]) * 1000
-    peak_vel = np.max(event_vel)
-
-    print(f"\nSaccade {idx+1}:")
-    print(f"  Samples: {len(event)}")
+for col_idx in range(num_events_to_plot):
+    event_info = ivt_events[col_idx]
+    
+    # Extract 500ms window: 250ms before saccade start to 250ms after
+    start_time = event_info['start_time']
+    window_start = start_time - 0.25  # 250ms before
+    window_end = start_time + 0.25    # 250ms after
+    
+    # Get all data in this window
+    mask = (gaze_data['gaze_timestamp'] >= window_start) & (gaze_data['gaze_timestamp'] <= window_end)
+    window_data = gaze_data[mask].copy()
+    
+    if len(window_data) == 0:
+        print(f"Warning: No data in window for event {col_idx}")
+        continue
+    
+    # Mark which samples are part of the actual saccade
+    saccade_mask = (window_data.index >= event_info['start_idx']) & (window_data.index <= event_info['end_idx'])
+    
+    # Extract data
+    window_x = window_data['transformed_gaze_x'].values
+    window_y = window_data['transformed_gaze_y'].values
+    window_t = window_data['gaze_timestamp'].values
+    window_vel = window_data['velocity'].values
+    
+    # Compute acceleration for the window
+    window_accel = np.gradient(window_vel)
+    
+    # Normalize time to ms from saccade start
+    tn = (window_t - start_time) * 1000
+    
+    # Get saccade portion for metrics
+    saccade_portion = window_data[saccade_mask]
+    amplitude = event_info['amplitude']
+    duration = event_info['duration_ms']
+    peak_vel = event_info['peak_velocity']
+    
+    print(f"\nSaccade {col_idx+1}:")
+    print(f"  Window samples: {len(window_data)}")
+    print(f"  Saccade samples: {saccade_mask.sum()}")
     print(f"  Duration: {duration:.1f} ms")
     print(f"  Amplitude: {amplitude:.2f}°")
     print(f"  Peak velocity: {peak_vel:.1f}°/s")
 
-    # Normalize time
-    tn = (event_t - event_t[0]) * 1000
-
-    # ---- X ----
-    ax = axes[idx, 0]
-    ax.plot(tn, event_x, 'b-o', markersize=4)
-    ax.set_title(f"Event {idx+1}: X Position")
-    ax.set_xlabel("Time (ms)")
-    ax.set_ylabel("X (°)")
+    # ---- Row 0: X Position ----
+    ax = axes[0, col_idx]
+    ax.plot(tn, window_x, 'b-', linewidth=1, alpha=0.5, label='Window')
+    ax.plot(tn[saccade_mask], window_x[saccade_mask], 'b-o', markersize=4, linewidth=2, label='Saccade')
+    ax.set_title(f"Saccade {col_idx+1}\n{duration:.1f}ms, {amplitude:.1f}°")
+    ax.set_ylabel("X Position (°)")
     ax.grid(alpha=0.3)
+    ax.axvline(0, color='red', linestyle='--', alpha=0.3, linewidth=1)
+    if col_idx == 0:
+        ax.legend(fontsize=8)
 
-    # ---- Y ----
-    ax = axes[idx, 1]
-    ax.plot(tn, event_y, 'b-o', markersize=4)
-    ax.set_title(f"Event {idx+1}: Y Position")
-    ax.set_xlabel("Time (ms)")
-    ax.set_ylabel("Y (°)")
+    # ---- Row 1: Y Position ----
+    ax = axes[1, col_idx]
+    ax.plot(tn, window_y, 'b-', linewidth=1, alpha=0.5)
+    ax.plot(tn[saccade_mask], window_y[saccade_mask], 'b-o', markersize=4, linewidth=2)
+    ax.set_ylabel("Y Position (°)")
     ax.grid(alpha=0.3)
+    ax.axvline(0, color='red', linestyle='--', alpha=0.3, linewidth=1)
 
-    # ---- Velocity ----
-    ax = axes[idx, 2]
-    ax.plot(tn, event_vel, 'r-o', markersize=4)
-    ax.axhline(peak_vel, color='orange', linestyle='--', label=f'Peak: {peak_vel:.0f}°/s')
-    ax.set_title(f"Event {idx+1}: Velocity")
-    ax.set_xlabel("Time (ms)")
+    # ---- Row 2: Velocity ----
+    ax = axes[2, col_idx]
+    ax.plot(tn, window_vel, 'r-', linewidth=1, alpha=0.5)
+    ax.plot(tn[saccade_mask], window_vel[saccade_mask], 'r-o', markersize=4, linewidth=2)
+    ax.axhline(peak_vel, color='orange', linestyle='--', alpha=0.7, label=f'Peak: {peak_vel:.0f}°/s')
+    ax.axhline(100, color='gray', linestyle=':', alpha=0.5, linewidth=1, label='Threshold')
     ax.set_ylabel("Velocity (°/s)")
-    ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
+    ax.axvline(0, color='red', linestyle='--', alpha=0.3, linewidth=1)
+    if col_idx == 0:
+        ax.legend(fontsize=8)
 
-    # ---- Acceleration ----
-    ax = axes[idx, 3]
-    ax.plot(tn, event_accel, 'g-o', markersize=4)
+    # ---- Row 3: Acceleration ----
+    ax = axes[3, col_idx]
+    ax.plot(tn, window_accel, 'g-', linewidth=1, alpha=0.5)
+    ax.plot(tn[saccade_mask], window_accel[saccade_mask], 'g-o', markersize=4, linewidth=2)
     ax.axhline(0, color='black', linewidth=0.5)
-    ax.set_title(f"Event {idx+1}: Acceleration")
-    ax.set_xlabel("Time (ms)")
-    ax.set_ylabel("Accel (°/s²)")
+    ax.set_ylabel("Acceleration (°/s²)")
+    ax.set_xlabel("Time from saccade start (ms)")
     ax.grid(alpha=0.3)
+    ax.axvline(0, color='red', linestyle='--', alpha=0.3, linewidth=1)
+    
+    # Set x-axis limits to exactly -250 to +250 ms
+    ax.set_xlim(-250, 250)
+    axes[0, col_idx].set_xlim(-250, 250)
+    axes[1, col_idx].set_xlim(-250, 250)
+    axes[2, col_idx].set_xlim(-250, 250)
 
 plt.tight_layout()
-plt.savefig("detailed_saccade_analysis.png", dpi=150)
+plt.savefig("detailed_saccade_analysis.png", dpi=150, bbox_inches='tight')
 plt.show()
 
 print("\nSaved detailed_saccade_analysis.png")
@@ -234,7 +295,8 @@ print("\nSaved detailed_saccade_analysis.png")
 fig, ax = plt.subplots(figsize=(12, 10))
 colors = ['blue', 'red', 'green', 'orange', 'purple']
 
-for idx, event_id in enumerate(event_ids):
+for idx in range(num_events_to_plot):
+    event_id = idx
     event = saccade_data[saccade_data['event_id'] == event_id]
     ev_info = ivt_events[event_id]
     ax.plot(event['transformed_gaze_x'], event['transformed_gaze_y'],

@@ -1,0 +1,84 @@
+{
+  "response_variable": "total_duration_s",
+  "n_subjects": 14,
+  "n_features": 19,
+  "models": {
+    "ridge": {
+      "alpha": 4.037017258596554,
+      "r2_insample": 0.9187575148502847,
+      "r2_cv_mean": -0.7351040530055114,
+      "r2_cv_std": 2.3586696954844486,
+      "rmse": 100.5016200842335,
+      "coefficients": {
+        "fixation_rate_hz": -13.952888268332943,
+        "mean_fixation_duration_ms": 9.955457729423655,
+        "saccade_count": 137.99549946328042,
+        "std_residual": 25.17592722791428,
+        "raw_pupil_mean": 9.183392263494422,
+        "mean_rotation_rate": 0.5928912849476025,
+        "fixation_proportion": 32.36470160553119,
+        "saccade_proportion": -69.27638084487728,
+        "mean_residual": -84.95713953611602,
+        "regression_r_squared": 52.31824034768607,
+        "regression_slope": 29.897070487972986,
+        "raw_pupil_std": 31.72231413342818,
+        "luminance_mean": -60.58078690715554,
+        "rotation_rate_std": -61.435262372837514,
+        "rotation_rate_max": 0.6409883412352697,
+        "gyro_x_mean": 31.07011412048873,
+        "gyro_y_mean": -25.47901028318257,
+        "gyro_z_mean": -40.917832143027454,
+        "rotation_rate_per_second": -3.7126910575541925
+      }
+    },
+    "lasso": {
+      "alpha": 5.336699231206307,
+      "r2_insample": 0.9754873576740125,
+      "r2_cv_mean": -0.7080774846529352,
+      "r2_cv_std": 2.6027175553675383,
+      "rmse": 55.20476009997217,
+      "n_nonzero": 8,
+      "selected_features": [
+        "saccade_count",
+        "saccade_proportion",
+        "mean_residual",
+        "rotation_rate_std",
+        "regression_r_squared",
+        "raw_pupil_std",
+        "mean_rotation_rate",
+        "gyro_x_mean"
+      ]
+    },
+    "elasticnet": {
+      "alpha": 0.2682695795279726,
+      "l1_ratio": 0.1,
+      "r2_insample": 0.9278878602627869,
+      "r2_cv_mean": -0.7912153790226527,
+      "r2_cv_std": 2.657417126253682,
+      "rmse": 94.68597464744703,
+      "n_nonzero": 19
+    }
+  },
+  "top_predictors": [
+    {
+      "feature": "saccade_count",
+      "coefficient": 137.99549946328042
+    },
+    {
+      "feature": "mean_residual",
+      "coefficient": -84.95713953611602
+    },
+    {
+      "feature": "saccade_proportion",
+      "coefficient": -69.27638084487728
+    },
+    {
+      "feature": "rotation_rate_std",
+      "coefficient": -61.435262372837514
+    },
+    {
+      "feature": "luminance_mean",
+      "coefficient": -60.58078690715554
+    }
+  ]
+}

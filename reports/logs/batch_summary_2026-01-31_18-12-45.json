@@ -1,0 +1,1940 @@
+{
+  "processing_session": {
+    "start_time": "2026-01-31T16:25:42.013242",
+    "end_time": "2026-01-31T18:12:45.521044",
+    "total_duration": 6423.50780248642,
+    "config": {
+      "video_filename": "scenevideo.mp4",
+      "gaze_filename": "gazedata.gz",
+      "subject_folder_pattern": "*",
+      "subjects_to_skip": [
+        "20231012T122519Z"
+      ],
+      "output_width": 1000,
+      "output_height": 606,
+      "target_markers": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "frame_width": 1920,
+      "frame_height": 1080,
+      "processing_options": {
+        "use_preselected_parameters": false,
+        "use_frame_preprocessing": false,
+        "use_outer_points": false,
+        "show_video": false,
+        "num_workers": 1
+      },
+      "skip_existing": true,
+      "create_summary_report": true,
+      "generate_heatmaps": true,
+      "heatmap_config": {
+        "figure_size": [
+          12,
+          8
+        ],
+        "dpi": 300,
+        "color_scheme": "viridis",
+        "heatmap_bins": 50,
+        "gaussian_sigma": 1.0,
+        "output_format": "png",
+        "create_heatmap": true,
+        "create_scatter": true,
+        "create_contour": true,
+        "create_combined": true,
+        "show_stats_overlay": true,
+        "save_stats": true,
+        "min_valid_points": 100
+      },
+      "run_whole_session_analysis": true,
+      "whole_session_config": {
+        "include_goal_d": false
+      },
+      "input_base_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw",
+      "output_base_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project"
+    }
+  },
+  "overall_stats": {
+    "total_subjects": 14,
+    "successful_subjects": 14,
+    "failed_subjects": 0,
+    "skipped_subjects_skip_list": 1,
+    "skipped_subjects_output_exists": 0,
+    "total_skipped_subjects": 1,
+    "success_rate": 100.0,
+    "skip_list_enabled": true,
+    "skip_list_count": 1,
+    "skip_list_subjects": [
+      "20231012T122519Z"
+    ],
+    "heatmap_generation_enabled": true,
+    "heatmap_successes": 14,
+    "heatmap_success_rate": 100.0,
+    "total_gaze_points_analyzed": 913398
+  },
+  "subject_results": [
+    {
+      "subject_name": "20231027T170020Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20231027T170020Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T170020Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T170020Z\\20231027T170020Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T170020Z\\20231027T170020Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T170020Z\\20231027T170020Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T170020Z\\20231027T170020Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T170020Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T170020Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T170020Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 397.2920751571655,
+      "step1_stats": {
+        "total_frames": 18471,
+        "frames_with_markers": 16975,
+        "frames_with_valid_homography": 934,
+        "frames_with_gaze": 16721,
+        "transformation_history_length": 18471
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 18471,
+        "imu_records": 94795,
+        "luminance_frames": 18471,
+        "output_csv_records": 73888,
+        "valid_transformations": 71511,
+        "invalid_transformations": 2377,
+        "valid_percentage": 96.78296881767,
+        "valid_angular_velocity": 73276,
+        "valid_pupil": 73368,
+        "valid_imu": 73123,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T170020Z\\20231027T170020Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20231027T170020Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T170020Z\\20231027T170020Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 73888,
+          "valid_samples": 71511,
+          "filtered_samples": 70091,
+          "valid_percentage": 96.78296881767,
+          "filtered_percentage": 94.86114118666089,
+          "x_range": [
+            103.61805725097656,
+            655.3867797851562
+          ],
+          "y_range": [
+            -72.30842590332031,
+            794.587890625
+          ],
+          "x_mean": 488.6456825071412,
+          "y_mean": 170.7572923968171,
+          "x_std": 64.35541287624504,
+          "y_std": 120.35160340184852
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 8.105488063858278,
+          "fixation_count": 6000,
+          "fixation_proportion": 0.7428353076041269,
+          "mean_fixation_duration_ms": 90.94668050000085,
+          "saccade_count": 870,
+          "saccade_proportion": 0.020607020033844643,
+          "total_duration_s": 740.2392,
+          "total_samples": 73276
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": 3.8790659344820114e-16,
+          "std_residual": 0.19410730189362166,
+          "regression_r_squared": 0.005632748726955803,
+          "regression_slope": 0.004578905856146701,
+          "regression_intercept": 3.1594155265325283,
+          "regression_p_value": 7.688604649948924e-90,
+          "raw_pupil_mean": 3.493992602536673,
+          "raw_pupil_std": 0.19465630109509108,
+          "luminance_mean": 73.06921926665301,
+          "luminance_std": 3.1905601841678255,
+          "n_samples": 71511
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 9795.318949401018,
+          "mean_rotation_rate": 13.234992405539835,
+          "rotation_rate_std": 15.234053894616487,
+          "rotation_rate_max": 270.9944499884968,
+          "gyro_x_mean": 11.236198362714468,
+          "gyro_x_std": 11.508888784099405,
+          "gyro_y_mean": 4.620291571636774,
+          "gyro_y_std": 12.388157767234365,
+          "gyro_z_mean": 1.7285627003417119,
+          "gyro_z_std": 4.755831080746048,
+          "total_duration_s": 740.249225,
+          "n_samples": 73123,
+          "rotation_rate_per_second": 13.232460931520757
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 740.2392
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T170020Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20231027T171918Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20231027T171918Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T171918Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T171918Z\\20231027T171918Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T171918Z\\20231027T171918Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T171918Z\\20231027T171918Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T171918Z\\20231027T171918Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T171918Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T171918Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T171918Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 695.7492334842682,
+      "step1_stats": {
+        "total_frames": 28879,
+        "frames_with_markers": 25216,
+        "frames_with_valid_homography": 4884,
+        "frames_with_gaze": 26558,
+        "transformation_history_length": 28879
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 28879,
+        "imu_records": 148293,
+        "luminance_frames": 28879,
+        "output_csv_records": 115602,
+        "valid_transformations": 108348,
+        "invalid_transformations": 7254,
+        "valid_percentage": 93.7250220584419,
+        "valid_angular_velocity": 110576,
+        "valid_pupil": 110725,
+        "valid_imu": 114409,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T171918Z\\20231027T171918Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20231027T171918Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T171918Z\\20231027T171918Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 115602,
+          "valid_samples": 108348,
+          "filtered_samples": 106221,
+          "valid_percentage": 93.7250220584419,
+          "filtered_percentage": 91.88508849327867,
+          "x_range": [
+            282.8611755371094,
+            933.4755249023438
+          ],
+          "y_range": [
+            105.86067199707033,
+            665.5767822265625
+          ],
+          "x_mean": 588.892001180706,
+          "y_mean": 281.111561989239,
+          "x_std": 92.31761098568313,
+          "y_std": 80.36707586391061
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 1.8934628067947006,
+          "fixation_count": 2193,
+          "fixation_proportion": 0.9387570539719288,
+          "mean_fixation_duration_ms": 476.79511308709556,
+          "saccade_count": 360,
+          "saccade_proportion": 0.005968745478223123,
+          "total_duration_s": 1158.195446,
+          "total_samples": 110576
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": -6.620924668876187e-16,
+          "std_residual": 0.2969175009402398,
+          "regression_r_squared": 0.1377592440744773,
+          "regression_slope": 0.03022399660088965,
+          "regression_intercept": 1.0196241432804451,
+          "regression_p_value": 0.0,
+          "raw_pupil_mean": 3.227781440358845,
+          "raw_pupil_std": 0.31975807672931245,
+          "luminance_mean": 73.05973879752892,
+          "luminance_std": 3.9267206548229336,
+          "n_samples": 108348
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 16199.56397676723,
+          "mean_rotation_rate": 13.989913300133667,
+          "rotation_rate_std": 15.168842957417949,
+          "rotation_rate_max": 269.0257755005917,
+          "gyro_x_mean": 11.345932294771739,
+          "gyro_x_std": 10.232317868959074,
+          "gyro_y_mean": 5.167313865719489,
+          "gyro_y_std": 13.438528600261492,
+          "gyro_z_mean": 2.3778686046959403,
+          "gyro_z_std": 5.377731463551579,
+          "total_duration_s": 1158.3256589999999,
+          "n_samples": 114409,
+          "rotation_rate_per_second": 13.985327745180538
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 1158.195446
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T171918Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20231027T174922Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20231027T174922Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T174922Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T174922Z\\20231027T174922Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T174922Z\\20231027T174922Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T174922Z\\20231027T174922Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T174922Z\\20231027T174922Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T174922Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T174922Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027T174922Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 600.9058907032013,
+      "step1_stats": {
+        "total_frames": 22262,
+        "frames_with_markers": 22016,
+        "frames_with_valid_homography": 1453,
+        "frames_with_gaze": 21982,
+        "transformation_history_length": 22262
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 22262,
+        "imu_records": 114271,
+        "luminance_frames": 22262,
+        "output_csv_records": 88721,
+        "valid_transformations": 88189,
+        "invalid_transformations": 532,
+        "valid_percentage": 99.40036744400987,
+        "valid_angular_velocity": 88426,
+        "valid_pupil": 88483,
+        "valid_imu": 87807,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T174922Z\\20231027T174922Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20231027T174922Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027T174922Z\\20231027T174922Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 88721,
+          "valid_samples": 88189,
+          "filtered_samples": 86474,
+          "valid_percentage": 99.40036744400987,
+          "filtered_percentage": 97.46734144114697,
+          "x_range": [
+            389.6275024414063,
+            789.852294921875
+          ],
+          "y_range": [
+            106.19020080566406,
+            700.056884765625
+          ],
+          "x_mean": 561.2581780774633,
+          "y_mean": 198.9550049240501,
+          "x_std": 70.81426889571915,
+          "y_std": 39.31086626124438
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 6.685357549968258,
+          "fixation_count": 5971,
+          "fixation_proportion": 0.8302874720104947,
+          "mean_fixation_duration_ms": 123.41334516831382,
+          "saccade_count": 370,
+          "saccade_proportion": 0.007328161400493067,
+          "total_duration_s": 893.145947,
+          "total_samples": 88426
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": -1.4438224523263666e-16,
+          "std_residual": 0.15179317557973873,
+          "regression_r_squared": 0.0010143237478094844,
+          "regression_slope": 0.0012331212986973412,
+          "regression_intercept": 2.8209274801424344,
+          "regression_p_value": 3.0740551403861305e-21,
+          "raw_pupil_mean": 2.9048197677714915,
+          "raw_pupil_std": 0.15187021790546373,
+          "luminance_mean": 68.0324698938217,
+          "luminance_std": 3.922429204528324,
+          "n_samples": 88189
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 9596.350557167108,
+          "mean_rotation_rate": 10.743735627874557,
+          "rotation_rate_std": 6.4034787912982365,
+          "rotation_rate_max": 256.95901631466535,
+          "gyro_x_mean": 9.924749531489288,
+          "gyro_x_std": 4.431332074383797,
+          "gyro_y_mean": 3.097854737958094,
+          "gyro_y_std": 5.7577384054816045,
+          "gyro_z_mean": 0.906923016967007,
+          "gyro_z_std": 1.5976592142777188,
+          "total_duration_s": 1100.2984339999998,
+          "n_samples": 87807,
+          "rotation_rate_per_second": 8.721588853199359
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 893.145947
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027T174922Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20231027TXXXXXXZ",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20231027TXXXXXXZ",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027TXXXXXXZ",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027TXXXXXXZ\\20231027TXXXXXXZ_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027TXXXXXXZ\\20231027TXXXXXXZ_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027TXXXXXXZ\\20231027TXXXXXXZ_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027TXXXXXXZ\\20231027TXXXXXXZ_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027TXXXXXXZ_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027TXXXXXXZ_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20231027TXXXXXXZ_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 590.8012700080872,
+      "step1_stats": {
+        "total_frames": 22262,
+        "frames_with_markers": 22016,
+        "frames_with_valid_homography": 1453,
+        "frames_with_gaze": 21982,
+        "transformation_history_length": 22262
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 22262,
+        "imu_records": 0,
+        "luminance_frames": 22262,
+        "output_csv_records": 88721,
+        "valid_transformations": 88189,
+        "invalid_transformations": 532,
+        "valid_percentage": 99.40036744400987,
+        "valid_angular_velocity": 88426,
+        "valid_pupil": 88483,
+        "valid_imu": 0,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027TXXXXXXZ\\20231027TXXXXXXZ_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20231027TXXXXXXZ",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20231027TXXXXXXZ\\20231027TXXXXXXZ_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 88721,
+          "valid_samples": 88189,
+          "filtered_samples": 86474,
+          "valid_percentage": 99.40036744400987,
+          "filtered_percentage": 97.46734144114697,
+          "x_range": [
+            389.6275024414063,
+            789.852294921875
+          ],
+          "y_range": [
+            106.19020080566406,
+            700.056884765625
+          ],
+          "x_mean": 561.2581780774633,
+          "y_mean": 198.9550049240501,
+          "x_std": 70.81426889571915,
+          "y_std": 39.31086626124438
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 6.685357549968258,
+          "fixation_count": 5971,
+          "fixation_proportion": 0.8302874720104947,
+          "mean_fixation_duration_ms": 123.41334516831382,
+          "saccade_count": 370,
+          "saccade_proportion": 0.007328161400493067,
+          "total_duration_s": 893.145947,
+          "total_samples": 88426
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": -1.4438224523263666e-16,
+          "std_residual": 0.15179317557973873,
+          "regression_r_squared": 0.0010143237478094844,
+          "regression_slope": 0.0012331212986973412,
+          "regression_intercept": 2.8209274801424344,
+          "regression_p_value": 3.0740551403861305e-21,
+          "raw_pupil_mean": 2.9048197677714915,
+          "raw_pupil_std": 0.15187021790546373,
+          "luminance_mean": 68.0324698938217,
+          "luminance_std": 3.922429204528324,
+          "n_samples": 88189
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 0.0,
+          "mean_rotation_rate": 0.0,
+          "rotation_rate_std": 0.0,
+          "rotation_rate_max": 0.0,
+          "gyro_x_mean": 0.0,
+          "gyro_x_std": 0.0,
+          "gyro_y_mean": 0.0,
+          "gyro_y_std": 0.0,
+          "gyro_z_mean": 0.0,
+          "gyro_z_std": 0.0,
+          "total_duration_s": 0.0,
+          "n_samples": 0,
+          "rotation_rate_per_second": 0.0
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 893.145947
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20231027TXXXXXXZ_viz_stress_timeline.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T125515Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T125515Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T125515Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T125515Z\\20251029T125515Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T125515Z\\20251029T125515Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T125515Z\\20251029T125515Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T125515Z\\20251029T125515Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T125515Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T125515Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T125515Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 1004.103841304779,
+      "step1_stats": {
+        "total_frames": 31744,
+        "frames_with_markers": 26779,
+        "frames_with_valid_homography": 12792,
+        "frames_with_gaze": 23619,
+        "transformation_history_length": 31744
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 31744,
+        "imu_records": 164924,
+        "luminance_frames": 31744,
+        "output_csv_records": 127046,
+        "valid_transformations": 111486,
+        "invalid_transformations": 15560,
+        "valid_percentage": 87.75246761015694,
+        "valid_angular_velocity": 118646,
+        "valid_pupil": 119175,
+        "valid_imu": 125748,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T125515Z\\20251029T125515Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T125515Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T125515Z\\20251029T125515Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 127046,
+          "valid_samples": 111486,
+          "filtered_samples": 109367,
+          "valid_percentage": 87.75246761015694,
+          "filtered_percentage": 86.0845677943422,
+          "x_range": [
+            -436.4603576660156,
+            908.341796875
+          ],
+          "y_range": [
+            172.83737182617188,
+            1955.807861328125
+          ],
+          "x_mean": 477.08955079666094,
+          "y_mean": 383.81977029014035,
+          "x_std": 175.99567567606775,
+          "y_std": 319.75065092456947
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 2.409756555715014,
+          "fixation_count": 3067,
+          "fixation_proportion": 0.9093521905500396,
+          "mean_fixation_duration_ms": 353.4127835017938,
+          "saccade_count": 742,
+          "saccade_proportion": 0.011496384201743001,
+          "total_duration_s": 1272.742673,
+          "total_samples": 118646
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": -1.1217150269430927e-16,
+          "std_residual": 0.30871396867165646,
+          "regression_r_squared": 0.1896389528527781,
+          "regression_slope": 0.04445023488661074,
+          "regression_intercept": 0.8470780914712441,
+          "regression_p_value": 0.0,
+          "raw_pupil_mean": 4.165552943867393,
+          "raw_pupil_std": 0.34293909890127167,
+          "luminance_mean": 74.6559576313001,
+          "luminance_std": 3.3597480954757595,
+          "n_samples": 111486
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 9779.124933079445,
+          "mean_rotation_rate": 7.684694658517759,
+          "rotation_rate_std": 18.633973056379826,
+          "rotation_rate_max": 275.692834246713,
+          "gyro_x_mean": 3.8880906540787135,
+          "gyro_x_std": 9.383130393582233,
+          "gyro_y_mean": 4.627792593921289,
+          "gyro_y_std": 16.548751725455574,
+          "gyro_z_mean": 2.616843373755876,
+          "gyro_z_std": 6.498664366859322,
+          "total_duration_s": 1272.7527,
+          "n_samples": 125748,
+          "rotation_rate_per_second": 7.683444657457372
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 1272.742673
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T125515Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T131758Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T131758Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131758Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131758Z\\20251029T131758Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131758Z\\20251029T131758Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131758Z\\20251029T131758Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131758Z\\20251029T131758Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T131758Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T131758Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T131758Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 14.798856496810913,
+      "step1_stats": {
+        "total_frames": 520,
+        "frames_with_markers": 149,
+        "frames_with_valid_homography": 4,
+        "frames_with_gaze": 126,
+        "transformation_history_length": 520
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 520,
+        "imu_records": 2594,
+        "luminance_frames": 520,
+        "output_csv_records": 2186,
+        "valid_transformations": 1448,
+        "invalid_transformations": 738,
+        "valid_percentage": 66.23970722781335,
+        "valid_angular_velocity": 1899,
+        "valid_pupil": 1917,
+        "valid_imu": 2165,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131758Z\\20251029T131758Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T131758Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131758Z\\20251029T131758Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 2186,
+          "valid_samples": 1448,
+          "filtered_samples": 1416,
+          "valid_percentage": 66.23970722781335,
+          "filtered_percentage": 64.77584629460202,
+          "x_range": [
+            -373.4022521972656,
+            1050.122802734375
+          ],
+          "y_range": [
+            -7.648811340332031,
+            1898.5458984375
+          ],
+          "x_mean": 508.1710546691876,
+          "y_mean": 850.7641471993115,
+          "x_std": 270.4855872263454,
+          "y_std": 457.6431928334243
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 7.952619208847846,
+          "fixation_count": 174,
+          "fixation_proportion": 0.5492364402317009,
+          "mean_fixation_duration_ms": 61.61090229885051,
+          "saccade_count": 41,
+          "saccade_proportion": 0.047919957872564506,
+          "total_duration_s": 21.879584,
+          "total_samples": 1899
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": -6.673605805481604e-16,
+          "std_residual": 0.44864692440741993,
+          "regression_r_squared": 0.0005654246976290773,
+          "regression_slope": 0.0017555802291011442,
+          "regression_intercept": 4.030065087695688,
+          "regression_p_value": 0.36589669624919186,
+          "raw_pupil_mean": 4.165230317679559,
+          "raw_pupil_std": 0.44877381624657864,
+          "luminance_mean": 76.99177043767264,
+          "luminance_std": 6.078469137491531,
+          "n_samples": 1448
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 594.360825818173,
+          "mean_rotation_rate": 27.16381668576993,
+          "rotation_rate_std": 24.4045270827506,
+          "rotation_rate_max": 169.15314926437,
+          "gyro_x_mean": 11.895674018009236,
+          "gyro_x_std": 17.959037906929467,
+          "gyro_y_mean": 17.97148761218821,
+          "gyro_y_std": 28.22002122837619,
+          "gyro_z_mean": 9.025982981174382,
+          "gyro_z_std": 13.3776897295924,
+          "total_duration_s": 21.889569,
+          "n_samples": 2165,
+          "rotation_rate_per_second": 27.152696602576913
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 21.879584
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131758Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T131831Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T131831Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131831Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131831Z\\20251029T131831Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131831Z\\20251029T131831Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131831Z\\20251029T131831Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131831Z\\20251029T131831Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T131831Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T131831Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T131831Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 527.5534620285034,
+      "step1_stats": {
+        "total_frames": 19621,
+        "frames_with_markers": 16752,
+        "frames_with_valid_homography": 13886,
+        "frames_with_gaze": 15663,
+        "transformation_history_length": 19621
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 19621,
+        "imu_records": 101768,
+        "luminance_frames": 19621,
+        "output_csv_records": 78500,
+        "valid_transformations": 72515,
+        "invalid_transformations": 5985,
+        "valid_percentage": 92.37579617834395,
+        "valid_angular_velocity": 76484,
+        "valid_pupil": 76658,
+        "valid_imu": 77703,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131831Z\\20251029T131831Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T131831Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T131831Z\\20251029T131831Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 78500,
+          "valid_samples": 72515,
+          "filtered_samples": 71281,
+          "valid_percentage": 92.37579617834395,
+          "filtered_percentage": 90.80382165605096,
+          "x_range": [
+            -1010.5119018554688,
+            1096.337158203125
+          ],
+          "y_range": [
+            231.6533050537109,
+            1506.55419921875
+          ],
+          "x_mean": 464.8036797666685,
+          "y_mean": 441.7437800407691,
+          "x_std": 192.27121381463687,
+          "y_std": 231.96836630491953
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 2.4885468288091706,
+          "fixation_count": 1957,
+          "fixation_proportion": 0.9147272632184509,
+          "mean_fixation_duration_ms": 359.40152682677547,
+          "saccade_count": 359,
+          "saccade_proportion": 0.008642330422049056,
+          "total_duration_s": 786.402722,
+          "total_samples": 76484
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": -3.5118046817406043e-16,
+          "std_residual": 0.2935512368928346,
+          "regression_r_squared": 0.0003661011608711628,
+          "regression_slope": -0.001543709069599845,
+          "regression_intercept": 4.548471062056038,
+          "regression_p_value": 2.5656940348925166e-07,
+          "raw_pupil_mean": 4.429790436461423,
+          "raw_pupil_std": 0.2936049863758969,
+          "luminance_mean": 76.88017640874429,
+          "luminance_std": 3.6391379958506858,
+          "n_samples": 72515
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 5011.008417889124,
+          "mean_rotation_rate": 6.373984720256597,
+          "rotation_rate_std": 17.219625860772982,
+          "rotation_rate_max": 266.8757757432856,
+          "gyro_x_mean": 3.0142589697925435,
+          "gyro_x_std": 7.000556848896872,
+          "gyro_y_mean": 4.185418653117537,
+          "gyro_y_std": 16.450844644998448,
+          "gyro_z_mean": 1.687977873039026,
+          "gyro_z_std": 3.948199106093895,
+          "total_duration_s": 786.412749,
+          "n_samples": 77703,
+          "rotation_rate_per_second": 6.371982682454101
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 786.402722
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T131831Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T135859Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T135859Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T135859Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T135859Z\\20251029T135859Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T135859Z\\20251029T135859Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T135859Z\\20251029T135859Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T135859Z\\20251029T135859Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T135859Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T135859Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T135859Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 368.38016653060913,
+      "step1_stats": {
+        "total_frames": 14799,
+        "frames_with_markers": 14020,
+        "frames_with_valid_homography": 13335,
+        "frames_with_gaze": 13600,
+        "transformation_history_length": 14799
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 14799,
+        "imu_records": 76827,
+        "luminance_frames": 14799,
+        "output_csv_records": 59223,
+        "valid_transformations": 57274,
+        "invalid_transformations": 1949,
+        "valid_percentage": 96.70904884926465,
+        "valid_angular_velocity": 57303,
+        "valid_pupil": 57537,
+        "valid_imu": 58623,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T135859Z\\20251029T135859Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T135859Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T135859Z\\20251029T135859Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 59223,
+          "valid_samples": 57274,
+          "filtered_samples": 56214,
+          "valid_percentage": 96.70904884926465,
+          "filtered_percentage": 94.91920368775645,
+          "x_range": [
+            117.1233367919922,
+            732.6900634765625
+          ],
+          "y_range": [
+            133.227783203125,
+            1215.1505126953125
+          ],
+          "x_mean": 464.3837487830862,
+          "y_mean": 349.6115115238966,
+          "x_std": 53.352114538846386,
+          "y_std": 111.0529663816822
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 1.4900131690364131,
+          "fixation_count": 884,
+          "fixation_proportion": 0.9376123414131895,
+          "mean_fixation_duration_ms": 609.281951357466,
+          "saccade_count": 299,
+          "saccade_proportion": 0.012721847023716036,
+          "total_duration_s": 593.283347,
+          "total_samples": 57303
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": -3.6424092471132696e-16,
+          "std_residual": 0.1757992772815949,
+          "regression_r_squared": 0.010987213438652265,
+          "regression_slope": 0.005867195566741359,
+          "regression_intercept": 3.101526199256026,
+          "regression_p_value": 1.2695114909683854e-139,
+          "raw_pupil_mean": 3.538961937353774,
+          "raw_pupil_std": 0.17677308130493494,
+          "luminance_mean": 74.55618840752227,
+          "luminance_std": 3.1581252376832074,
+          "n_samples": 57274
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 2538.3341167534863,
+          "mean_rotation_rate": 4.282536345252385,
+          "rotation_rate_std": 11.427808379765697,
+          "rotation_rate_max": 256.58812178222644,
+          "gyro_x_mean": 2.870921337219009,
+          "gyro_x_std": 7.838212643435534,
+          "gyro_y_mean": 2.041109879416977,
+          "gyro_y_std": 8.818160102837437,
+          "gyro_z_mean": 1.20858664349547,
+          "gyro_z_std": 2.8348554507072317,
+          "total_duration_s": 593.293343,
+          "n_samples": 58623,
+          "rotation_rate_per_second": 4.278379568390819
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 593.283347
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T135859Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T143149Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T143149Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T143149Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T143149Z\\20251029T143149Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T143149Z\\20251029T143149Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T143149Z\\20251029T143149Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T143149Z\\20251029T143149Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T143149Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T143149Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T143149Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 359.28015637397766,
+      "step1_stats": {
+        "total_frames": 14842,
+        "frames_with_markers": 13698,
+        "frames_with_valid_homography": 8951,
+        "frames_with_gaze": 12781,
+        "transformation_history_length": 14842
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 14842,
+        "imu_records": 77079,
+        "luminance_frames": 14842,
+        "output_csv_records": 59474,
+        "valid_transformations": 57977,
+        "invalid_transformations": 1497,
+        "valid_percentage": 97.48293371893601,
+        "valid_angular_velocity": 58242,
+        "valid_pupil": 58407,
+        "valid_imu": 58871,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T143149Z\\20251029T143149Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T143149Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T143149Z\\20251029T143149Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 59474,
+          "valid_samples": 57977,
+          "filtered_samples": 56939,
+          "valid_percentage": 97.48293371893601,
+          "filtered_percentage": 95.73763325150486,
+          "x_range": [
+            277.05157470703125,
+            888.0731201171875
+          ],
+          "y_range": [
+            115.32462310791016,
+            1217.848388671875
+          ],
+          "x_mean": 503.05413777679274,
+          "y_mean": 389.06576536183246,
+          "x_std": 72.92381071105909,
+          "y_std": 184.5781170509556
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 4.771030301325285,
+          "fixation_count": 2843,
+          "fixation_proportion": 0.853027025170839,
+          "mean_fixation_duration_ms": 175.2803243053106,
+          "saccade_count": 651,
+          "saccade_proportion": 0.022423680505477148,
+          "total_duration_s": 595.888062,
+          "total_samples": 58242
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": 2.2893454825187006e-16,
+          "std_residual": 0.33390344783939,
+          "regression_r_squared": 0.044761885513084756,
+          "regression_slope": 0.014894164781068784,
+          "regression_intercept": 2.6502604463233057,
+          "regression_p_value": 0.0,
+          "raw_pupil_mean": 3.7849820791003337,
+          "raw_pupil_std": 0.3416371436630053,
+          "luminance_mean": 76.18565051860544,
+          "luminance_std": 4.852919797111393,
+          "n_samples": 57977
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 3891.405138930617,
+          "mean_rotation_rate": 6.529620455537873,
+          "rotation_rate_std": 14.555268363179717,
+          "rotation_rate_max": 236.79692691353404,
+          "gyro_x_mean": 3.990035221752476,
+          "gyro_x_std": 10.882457815798242,
+          "gyro_y_mean": 3.3070756912832024,
+          "gyro_y_std": 10.584624177689449,
+          "gyro_z_mean": 2.2627646519252775,
+          "gyro_z_std": 4.762199445094544,
+          "total_duration_s": 595.898058,
+          "n_samples": 58871,
+          "rotation_rate_per_second": 6.530320222877143
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 595.888062
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T143149Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T164000Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T164000Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T164000Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T164000Z\\20251029T164000Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T164000Z\\20251029T164000Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T164000Z\\20251029T164000Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T164000Z\\20251029T164000Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T164000Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T164000Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T164000Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 762.9802260398865,
+      "step1_stats": {
+        "total_frames": 29388,
+        "frames_with_markers": 28194,
+        "frames_with_valid_homography": 22347,
+        "frames_with_gaze": 26584,
+        "transformation_history_length": 29388
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 29388,
+        "imu_records": 150985,
+        "luminance_frames": 29388,
+        "output_csv_records": 117208,
+        "valid_transformations": 113584,
+        "invalid_transformations": 3624,
+        "valid_percentage": 96.90806088321617,
+        "valid_angular_velocity": 113996,
+        "valid_pupil": 114315,
+        "valid_imu": 115985,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T164000Z\\20251029T164000Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T164000Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T164000Z\\20251029T164000Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 117208,
+          "valid_samples": 113584,
+          "filtered_samples": 111370,
+          "valid_percentage": 96.90806088321617,
+          "filtered_percentage": 95.01911132345914,
+          "x_range": [
+            225.4976959228516,
+            805.6342163085938
+          ],
+          "y_range": [
+            104.45196533203124,
+            1851.98876953125
+          ],
+          "x_mean": 446.0977338143008,
+          "y_mean": 407.17515125827833,
+          "x_std": 103.73830828357828,
+          "y_std": 175.35291108191814
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 4.992439594980532,
+          "fixation_count": 5881,
+          "fixation_proportion": 0.8662847819221727,
+          "mean_fixation_duration_ms": 168.46059003570812,
+          "saccade_count": 818,
+          "saccade_proportion": 0.015939155759851224,
+          "total_duration_s": 1177.981203,
+          "total_samples": 113996
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": 2.602354011799212e-17,
+          "std_residual": 0.28345249740764655,
+          "regression_r_squared": 0.0010486966789844164,
+          "regression_slope": 0.0028085132949349774,
+          "regression_intercept": 3.2896533205961354,
+          "regression_p_value": 9.588377340174456e-28,
+          "raw_pupil_mean": 3.5008247156289625,
+          "raw_pupil_std": 0.2836012422553874,
+          "luminance_mean": 75.18974377428266,
+          "luminance_std": 3.27006654938508,
+          "n_samples": 113584
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 12052.051924142197,
+          "mean_rotation_rate": 10.249842029510576,
+          "rotation_rate_std": 8.827671825574916,
+          "rotation_rate_max": 220.33390585040445,
+          "gyro_x_mean": 9.078798563600897,
+          "gyro_x_std": 7.131109224226797,
+          "gyro_y_mean": 3.2746431208940145,
+          "gyro_y_std": 7.0407804879177265,
+          "gyro_z_mean": 1.146098158040247,
+          "gyro_z_std": 2.8871248423384577,
+          "total_duration_s": 1178.051354,
+          "n_samples": 115985,
+          "rotation_rate_per_second": 10.230497917786186
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 1177.981203
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T164000Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T172913Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T172913Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T172913Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T172913Z\\20251029T172913Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T172913Z\\20251029T172913Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T172913Z\\20251029T172913Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T172913Z\\20251029T172913Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T172913Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T172913Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T172913Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 327.1493446826935,
+      "step1_stats": {
+        "total_frames": 13218,
+        "frames_with_markers": 12890,
+        "frames_with_valid_homography": 3660,
+        "frames_with_gaze": 12305,
+        "transformation_history_length": 13218
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 13218,
+        "imu_records": 67894,
+        "luminance_frames": 13218,
+        "output_csv_records": 53072,
+        "valid_transformations": 50410,
+        "invalid_transformations": 2662,
+        "valid_percentage": 94.9841724449804,
+        "valid_angular_velocity": 50656,
+        "valid_pupil": 50846,
+        "valid_imu": 52523,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T172913Z\\20251029T172913Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T172913Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T172913Z\\20251029T172913Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 53072,
+          "valid_samples": 50410,
+          "filtered_samples": 49549,
+          "valid_percentage": 94.9841724449804,
+          "filtered_percentage": 93.36184805547181,
+          "x_range": [
+            342.49365234375,
+            910.0805053710938
+          ],
+          "y_range": [
+            170.82809448242188,
+            860.03369140625
+          ],
+          "x_mean": 518.9733735174822,
+          "y_mean": 276.6099296440022,
+          "x_std": 87.65041285989884,
+          "y_std": 57.73588472016601
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 4.3204144958644966,
+          "fixation_count": 2297,
+          "fixation_proportion": 0.8625236891977258,
+          "mean_fixation_duration_ms": 190.62644710491873,
+          "saccade_count": 464,
+          "saccade_proportion": 0.016207359444093492,
+          "total_duration_s": 531.661951,
+          "total_samples": 50656
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": 7.772133792860926e-16,
+          "std_residual": 0.30335148526406347,
+          "regression_r_squared": 0.00011057872357095483,
+          "regression_slope": 0.0010384801445736745,
+          "regression_intercept": 4.268151639806012,
+          "regression_p_value": 0.018225894908948003,
+          "raw_pupil_mean": 4.3503535608014285,
+          "raw_pupil_std": 0.30336825876518747,
+          "luminance_mean": 79.1559871654191,
+          "luminance_std": 3.071904624535642,
+          "n_samples": 50410
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 4995.02907313989,
+          "mean_rotation_rate": 9.398162400873185,
+          "rotation_rate_std": 7.445709331451995,
+          "rotation_rate_max": 174.27574503952673,
+          "gyro_x_mean": 8.189925465046741,
+          "gyro_x_std": 4.873329247739928,
+          "gyro_y_mean": 3.3233181942475265,
+          "gyro_y_std": 7.169084874372223,
+          "gyro_z_mean": 0.9562661923162717,
+          "gyro_z_std": 2.183688260204,
+          "total_duration_s": 531.671936,
+          "n_samples": 52523,
+          "rotation_rate_per_second": 9.394945895996832
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 531.661951
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T172913Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T180021Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T180021Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T180021Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T180021Z\\20251029T180021Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T180021Z\\20251029T180021Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T180021Z\\20251029T180021Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T180021Z\\20251029T180021Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T180021Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T180021Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T180021Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 192.42118287086487,
+      "step1_stats": {
+        "total_frames": 7296,
+        "frames_with_markers": 6926,
+        "frames_with_valid_homography": 4261,
+        "frames_with_gaze": 6729,
+        "transformation_history_length": 7296
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 7296,
+        "imu_records": 37372,
+        "luminance_frames": 7296,
+        "output_csv_records": 29249,
+        "valid_transformations": 28498,
+        "invalid_transformations": 751,
+        "valid_percentage": 97.43239085096927,
+        "valid_angular_velocity": 29142,
+        "valid_pupil": 29158,
+        "valid_imu": 28947,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T180021Z\\20251029T180021Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T180021Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T180021Z\\20251029T180021Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 29249,
+          "valid_samples": 28498,
+          "filtered_samples": 27981,
+          "valid_percentage": 97.43239085096927,
+          "filtered_percentage": 95.66480905330097,
+          "x_range": [
+            200.7471160888672,
+            799.1085815429688
+          ],
+          "y_range": [
+            11.292393684387209,
+            1061.665283203125
+          ],
+          "x_mean": 453.47873800435923,
+          "y_mean": 284.1175454273894,
+          "x_std": 93.00914330670253,
+          "y_std": 124.75123486333855
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 6.352804427972131,
+          "fixation_count": 1865,
+          "fixation_proportion": 0.8402992244869947,
+          "mean_fixation_duration_ms": 131.5427436997319,
+          "saccade_count": 98,
+          "saccade_proportion": 0.006657058540937478,
+          "total_duration_s": 293.57113400000003,
+          "total_samples": 29142
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": 2.5132538341153097e-16,
+          "std_residual": 0.18355222389454734,
+          "regression_r_squared": 0.042568312395739646,
+          "regression_slope": 0.009822963598892225,
+          "regression_intercept": 2.7457441266402833,
+          "regression_p_value": 1.5259861562576677e-271,
+          "raw_pupil_mean": 3.49187507895291,
+          "raw_pupil_std": 0.18758830196976517,
+          "luminance_mean": 75.95782523278112,
+          "luminance_std": 3.940092648658434,
+          "n_samples": 28498
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 3430.7279908876035,
+          "mean_rotation_rate": 11.713332741892545,
+          "rotation_rate_std": 21.186815647846654,
+          "rotation_rate_max": 256.79354524892705,
+          "gyro_x_mean": 8.7300124266107,
+          "gyro_x_std": 11.175795829328298,
+          "gyro_y_mean": 5.425695762778319,
+          "gyro_y_std": 18.388002555073854,
+          "gyro_z_mean": 2.347729876566041,
+          "gyro_z_std": 7.434180665390461,
+          "total_duration_s": 293.581202,
+          "n_samples": 28947,
+          "rotation_rate_per_second": 11.685789033889177
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 293.57113400000003
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T180021Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T183522Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T183522Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T183522Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T183522Z\\20251029T183522Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T183522Z\\20251029T183522Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T183522Z\\20251029T183522Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T183522Z\\20251029T183522Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T183522Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T183522Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T183522Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 421.72648549079895,
+      "step1_stats": {
+        "total_frames": 15675,
+        "frames_with_markers": 14638,
+        "frames_with_valid_homography": 904,
+        "frames_with_gaze": 13753,
+        "transformation_history_length": 15675
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 15675,
+        "imu_records": 80390,
+        "luminance_frames": 15675,
+        "output_csv_records": 62752,
+        "valid_transformations": 58833,
+        "invalid_transformations": 3919,
+        "valid_percentage": 93.75478072412035,
+        "valid_angular_velocity": 58709,
+        "valid_pupil": 59090,
+        "valid_imu": 62111,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T183522Z\\20251029T183522Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T183522Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T183522Z\\20251029T183522Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 62752,
+          "valid_samples": 58833,
+          "filtered_samples": 57703,
+          "valid_percentage": 93.75478072412035,
+          "filtered_percentage": 91.9540413054564,
+          "x_range": [
+            247.06619262695312,
+            591.6041870117188
+          ],
+          "y_range": [
+            125.88119506835938,
+            1199.935546875
+          ],
+          "x_mean": 406.0303938326062,
+          "y_mean": 404.5281571522992,
+          "x_std": 60.96057312664032,
+          "y_std": 155.19161630207003
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 1.1550150814381313,
+          "fixation_count": 708,
+          "fixation_proportion": 0.9537890272360285,
+          "mean_fixation_duration_ms": 794.6142118644076,
+          "saccade_count": 175,
+          "saccade_proportion": 0.006796232264218433,
+          "total_duration_s": 612.979009,
+          "total_samples": 58709
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": 3.1400933370323805e-17,
+          "std_residual": 0.20816648889562417,
+          "regression_r_squared": 0.046959253626316845,
+          "regression_slope": 0.016326000937644938,
+          "regression_intercept": 1.9180615581623894,
+          "regression_p_value": 0.0,
+          "raw_pupil_mean": 3.228630581476383,
+          "raw_pupil_std": 0.2132333267860977,
+          "luminance_mean": 80.27495700383355,
+          "luminance_std": 2.8303220730707896,
+          "n_samples": 58833
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 7672.863043880539,
+          "mean_rotation_rate": 12.179112843885392,
+          "rotation_rate_std": 17.98320535630075,
+          "rotation_rate_max": 360.0551453901065,
+          "gyro_x_mean": 9.570884306664036,
+          "gyro_x_std": 10.717749248816652,
+          "gyro_y_mean": 4.6385363770536845,
+          "gyro_y_std": 14.197776421859025,
+          "gyro_z_mean": 2.1396369190761995,
+          "gyro_z_std": 8.742508184488653,
+          "total_duration_s": 628.74755,
+          "n_samples": 62111,
+          "rotation_rate_per_second": 12.203408258021106
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 612.979009
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T183522Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    },
+    {
+      "subject_name": "20251029T192809Z",
+      "subject_folder": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\raw\\20251029T192809Z",
+      "output_paths": {
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T192809Z",
+        "corrected_video": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T192809Z\\20251029T192809Z_gaze_corrected_video.mp4",
+        "intermediate_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T192809Z\\20251029T192809Z_gaze_output.csv",
+        "transformation_history": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T192809Z\\20251029T192809Z_transformation_history.npy",
+        "final_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T192809Z\\20251029T192809Z_final_gaze_data.csv",
+        "processing_log": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T192809Z_processing_log.txt",
+        "gaze_stats": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T192809Z_gaze_statistics.json",
+        "whole_session_analysis": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\logs\\20251029T192809Z_whole_session_analysis.json",
+        "heatmap_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_heatmap.png",
+        "scatter_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_scatter.png",
+        "contour_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_contour.png",
+        "dashboard_png": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_dashboard.png",
+        "viz_cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_cognitive_fingerprint.png",
+        "viz_main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_main_sequence.png",
+        "viz_stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_stress_timeline.png",
+        "viz_stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_stability_radar.png"
+      },
+      "status": "success",
+      "error_message": null,
+      "processing_time": 159.70236206054688,
+      "step1_stats": {
+        "total_frames": 6237,
+        "frames_with_markers": 5394,
+        "frames_with_valid_homography": 4324,
+        "frames_with_gaze": 5284,
+        "transformation_history_length": 6237
+      },
+      "step2_stats": {
+        "success": true,
+        "transformation_records": 6237,
+        "imu_records": 31842,
+        "luminance_frames": 6237,
+        "output_csv_records": 24976,
+        "valid_transformations": 22760,
+        "invalid_transformations": 2216,
+        "valid_percentage": 91.12748238308777,
+        "valid_angular_velocity": 23610,
+        "valid_pupil": 23695,
+        "valid_imu": 24514,
+        "output_csv_path": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T192809Z\\20251029T192809Z_final_gaze_data.csv",
+        "frame_dimensions": [
+          1920,
+          1080
+        ]
+      },
+      "step3_stats": {
+        "success": true,
+        "subject_name": "20251029T192809Z",
+        "input_csv": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\data\\processed\\20251029T192809Z\\20251029T192809Z_final_gaze_data.csv",
+        "output_dir": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures",
+        "statistics": {
+          "original_samples": 24976,
+          "valid_samples": 22760,
+          "filtered_samples": 22318,
+          "valid_percentage": 91.12748238308777,
+          "filtered_percentage": 89.35778347213325,
+          "x_range": [
+            210.1913604736328,
+            1276.4420166015625
+          ],
+          "y_range": [
+            197.4073028564453,
+            1369.5419921875
+          ],
+          "x_mean": 467.5548911437797,
+          "y_mean": 374.20780880488167,
+          "x_std": 95.57827289522295,
+          "y_std": 125.9910004122867
+        },
+        "visualizations_created": [
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_heatmap.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_scatter.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_contour.png",
+          "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_dashboard.png"
+        ]
+      },
+      "step4_stats": {
+        "goal_a_oculometric_efficiency": {
+          "fixation_rate_hz": 4.515313628965042,
+          "fixation_count": 1105,
+          "fixation_proportion": 0.8538754764930114,
+          "mean_fixation_duration_ms": 183.17195384615377,
+          "saccade_count": 211,
+          "saccade_proportion": 0.016560779330792037,
+          "total_duration_s": 244.722757,
+          "total_samples": 23610
+        },
+        "goal_b_cognitive_load": {
+          "mean_residual": 4.595425777850912e-16,
+          "std_residual": 0.21436435920147995,
+          "regression_r_squared": 0.01829997991079599,
+          "regression_slope": 0.010505595184504507,
+          "regression_intercept": 2.388061756977424,
+          "regression_p_value": 2.079165842797457e-93,
+          "raw_pupil_mean": 3.1933406854130055,
+          "raw_pupil_std": 0.21635312877884363,
+          "luminance_mean": 76.65238516170395,
+          "luminance_std": 2.785914762126166,
+          "n_samples": 22760
+        },
+        "goal_c_motor_stability": {
+          "total_rotation_deg": 3106.875976989753,
+          "mean_rotation_rate": 12.520557827408854,
+          "rotation_rate_std": 16.490823013011102,
+          "rotation_rate_max": 258.59979745909817,
+          "gyro_x_mean": 9.204169541747573,
+          "gyro_x_std": 10.926237310477667,
+          "gyro_y_mean": 5.783197276759657,
+          "gyro_y_std": 14.812266056465367,
+          "gyro_z_mean": 2.209962073520941,
+          "gyro_z_std": 5.841775828363708,
+          "total_duration_s": 248.118853,
+          "n_samples": 24514,
+          "rotation_rate_per_second": 12.52172472758349
+        },
+        "goal_d_visual_strategy": null,
+        "recording_duration_s": 244.722757
+      },
+      "step5_stats": {
+        "created": {
+          "cognitive_fingerprint": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_cognitive_fingerprint.png",
+          "main_sequence": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_main_sequence.png",
+          "stress_timeline": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_stress_timeline.png",
+          "stability_radar": "D:\\OneDrive - University of Pittsburgh\\SurgicalCognition\\Chicken_Wing_Project\\reports\\figures\\20251029T192809Z_viz_stability_radar.png"
+        },
+        "errors": [],
+        "success": true
+      }
+    }
+  ]
+}
