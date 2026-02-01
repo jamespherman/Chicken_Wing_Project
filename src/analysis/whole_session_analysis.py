@@ -1,17 +1,16 @@
 """
 Whole-Session Analysis Module for Surgical Skill Assessment
 
-Implements the "Whole-Session" Global Analysis goals from the revised roadmap:
-- Goal A: Oculometric Efficiency (Global Fixation Rate)
-- Goal B: Cognitive Load (Luminance-Adjusted Pupil Residuals)
-- Goal C: Motor Stability (Integrated Gyroscopic Motion)
-- Goal D: Visual Strategy (Tool vs Tissue Classification)
+This module performs the high-level scientific analysis. It calculates metrics for
+the four key goals of the project:
 
-This module operates on the enhanced final_gaze_data.csv which contains:
-- angular_velocity_deg_s: Physics-based angular velocity
-- pupil_diameter_avg: Average pupil diameter
-- frame_luminance: Frame brightness
-- head_gyro_x/y/z: IMU gyroscope data
+- **Goal A: Oculometric Efficiency**: Is the surgeon searching efficiently?
+- **Goal B: Cognitive Load**: Is the surgeon mentally stressed?
+- **Goal C: Motor Stability**: Is the surgeon's head stable?
+- **Goal D: Visual Strategy**: Is the surgeon looking at tools or tissue? (Optional)
+
+These metrics are derived from the enhanced CSV generated in the previous step,
+which contains physics-based data (angular velocity, pupil diameter, IMU).
 """
 
 import numpy as np
@@ -32,15 +31,15 @@ logger = get_logger(__name__)
 
 class WholeSessionAnalyzer:
     """
-    Analyzes entire recording sessions for surgical skill metrics.
+    Analyzes an entire surgical session to produce a skill report.
 
-    Since task-specific timestamps are not available, this analyzer
-    treats the entire recording as a single performance block.
+    Since we often don't have timestamps for specific sub-tasks, this analyzer
+    treats the whole recording as one continuous performance block.
     """
 
     # I-VT velocity thresholds (degrees/second)
-    FIXATION_THRESHOLD = 30.0    # Below this = fixation
-    # Note: SACCADE_THRESHOLD is now computed adaptively using MAD-based detection
+    # Velocity below this is considered a "Fixation" (eye is still)
+    FIXATION_THRESHOLD = 30.0
 
     def __init__(self, csv_path: str = None, video_path: str = None):
         """
@@ -67,11 +66,11 @@ class WholeSessionAnalyzer:
         self.gyro_x = None                # np.ndarray (pitch)
         self.gyro_y = None                # np.ndarray (yaw)
 
-        # Saccade detection
+        # Saccade detection (Goal A)
         self.saccade_detector = AdaptiveSaccadeDetector()
         self.adaptive_threshold = None    # Computed saccade threshold
 
-        # Pupil-luminance kernel analysis
+        # Pupil-luminance kernel analysis (Goal B)
         self.kernel_model = None          # PupilLuminanceKernel instance
         self.convolved_luminance = None   # np.ndarray for visualization
         self.pupil_predicted = None       # np.ndarray (from convolved regression)
@@ -79,12 +78,6 @@ class WholeSessionAnalyzer:
     def load_data(self, csv_path: str = None) -> pd.DataFrame:
         """
         Load the enhanced gaze data CSV.
-
-        Args:
-            csv_path: Path to CSV file (overrides constructor path)
-
-        Returns:
-            DataFrame with gaze data
         """
         path = csv_path or self.csv_path
         if path is None:
@@ -94,7 +87,6 @@ class WholeSessionAnalyzer:
         self.data = pd.read_csv(path)
 
         logger.info(f"Loaded {len(self.data)} records")
-        logger.info(f"Columns: {list(self.data.columns)}")
 
         # Validate required columns
         required = ['gaze_timestamp', 'angular_velocity_deg_s']
@@ -108,19 +100,14 @@ class WholeSessionAnalyzer:
 
     def calculate_global_fixation_rate(self) -> Dict[str, float]:
         """
-        Goal A: Calculate global fixation rate using angular velocity I-VT.
+        Goal A: How efficient is the visual search?
 
-        Hypothesis: Does the surgeon fixate frequently (novice searching)
-        or stably (expert planning)?
+        Metric: **Fixation Rate (Hz)**
+        - High rate = frequent, short stops. Often indicates confusion or searching (Novice).
+        - Low rate = fewer, longer stops. Indicates processing and planning (Expert).
 
         Returns:
-            Dictionary with fixation metrics:
-            - fixation_rate_hz: Fixations per second
-            - fixation_count: Total number of fixation events
-            - fixation_proportion: Proportion of time in fixation state
-            - mean_fixation_duration_ms: Average fixation duration
-            - saccade_count: Number of saccade events
-            - saccade_proportion: Proportion of time in saccade state
+            Dictionary with fixation metrics: rates, counts, proportions.
         """
         if self.data is None:
             raise ValueError("No data loaded. Call load_data() first.")
@@ -135,25 +122,24 @@ class WholeSessionAnalyzer:
             logger.warning("Insufficient valid angular velocity data")
             return self._empty_fixation_metrics()
 
-        # Classify each sample using I-VT thresholds
         velocities = valid_data['angular_velocity_deg_s'].values
         timestamps = valid_data['gaze_timestamp'].values
 
-        # First, detect saccades using adaptive MAD threshold
-        # This populates self.adaptive_threshold
+        # 1. Detect Saccades using Adaptive MAD threshold
+        # This fills self.saccade_events and calculates self.adaptive_threshold
         self._calculate_saccade_events(None, timestamps, velocities, valid_data)
 
-        # Use adaptive threshold for state classification
+        # 2. Determine Classification Thresholds
         saccade_threshold = self.adaptive_threshold if self.adaptive_threshold else 200.0
 
-        # Classify states using adaptive threshold
+        # 3. Classify every sample
         states = np.empty(len(velocities), dtype=object)
         states[velocities < self.FIXATION_THRESHOLD] = 'FIXATION'
         states[velocities >= saccade_threshold] = 'SACCADE'
         states[(velocities >= self.FIXATION_THRESHOLD) &
                (velocities < saccade_threshold)] = 'OTHER'
 
-        # Count fixation events (transitions into fixation state)
+        # 4. Count Fixation Events (transitions into fixation state)
         fixation_starts = (states == 'FIXATION') & (np.roll(states, 1) != 'FIXATION')
         fixation_starts[0] = states[0] == 'FIXATION'  # Handle first sample
         fixation_count = fixation_starts.sum()
@@ -167,7 +153,7 @@ class WholeSessionAnalyzer:
         # Calculate fixation rate (Hz)
         fixation_rate_hz = fixation_count / total_duration if total_duration > 0 else 0
 
-        # Calculate proportions
+        # Calculate proportions of time spent in each state
         fixation_samples = (states == 'FIXATION').sum()
         saccade_samples = (states == 'SACCADE').sum()
         total_samples = len(states)
@@ -209,8 +195,6 @@ class WholeSessionAnalyzer:
 
         self.metrics['goal_a'] = metrics
         logger.info(f"  Fixation rate: {fixation_rate_hz:.2f} Hz")
-        logger.info(f"  Fixation count: {fixation_count}")
-        logger.info(f"  Mean fixation duration: {mean_fixation_duration_ms:.1f} ms")
         logger.info(f"  Valid saccade count: {valid_saccade_count} (adaptive threshold: {self.adaptive_threshold:.1f} deg/s)")
 
         return metrics
@@ -236,7 +220,6 @@ class WholeSessionAnalyzer:
                     in_event = False
                     durations.append(timestamps[i] - event_start)
 
-        # Handle event that extends to end of recording
         if in_event:
             durations.append(timestamps[-1] - event_start)
 
@@ -251,23 +234,12 @@ class WholeSessionAnalyzer:
     ) -> None:
         """
         Extract saccade events using adaptive MAD-based threshold detection.
-
-        Uses AdaptiveSaccadeDetector for:
-        - MAD-based adaptive threshold (replaces fixed 300 deg/s)
-        - Amplitude calculation from 3D gaze direction vectors (not velocity integration)
-        - Physiological filtering (duration, amplitude, velocity constraints)
-        - Main sequence validation
-
-        Stores results in:
-        - self.saccade_events: List[SaccadeEvent] with full event data
-        - self.saccade_amplitudes: List[float] for visualization
-        - self.saccade_peak_velocities: List[float] for visualization
-        - self.adaptive_threshold: Computed threshold value
+        Uses the AdaptiveSaccadeDetector class.
         """
         # Use the adaptive saccade detector
         saccade_events = self.saccade_detector.detect_saccades(valid_data)
 
-        # Store the adaptive threshold
+        # Store the adaptive threshold found by the detector
         self.adaptive_threshold = self.saccade_detector.adaptive_threshold
 
         # Extract valid saccades for visualization
@@ -279,18 +251,7 @@ class WholeSessionAnalyzer:
 
         # Get summary statistics
         stats = self.saccade_detector.get_summary_statistics(saccade_events)
-
         logger.info(f"  Adaptive threshold: {self.adaptive_threshold:.1f} deg/s")
-        logger.info(f"  Total detected: {stats['total_detected']}, "
-                   f"Valid: {stats['valid_count']}, "
-                   f"Rejected: {stats['rejected_count']}")
-        if stats['valid_count'] > 0:
-            logger.info(f"  Amplitude: {stats['amplitude_mean_deg']:.1f} +/- {stats['amplitude_std_deg']:.1f} deg "
-                       f"(max: {stats['amplitude_max_deg']:.1f} deg)")
-            logger.info(f"  Peak velocity: {stats['peak_velocity_mean_deg_s']:.1f} +/- "
-                       f"{stats['peak_velocity_std_deg_s']:.1f} deg/s "
-                       f"(max: {stats['peak_velocity_max_deg_s']:.1f} deg/s)")
-            logger.info(f"  Main sequence R²: {stats['main_sequence_r_squared']:.3f}")
 
     def _empty_fixation_metrics(self) -> Dict[str, float]:
         """Return empty fixation metrics dictionary."""
@@ -315,29 +276,22 @@ class WholeSessionAnalyzer:
 
     def calculate_luminance_adjusted_pupil_residuals(self) -> Dict[str, float]:
         """
-        Goal B: Calculate luminance-adjusted pupil residuals as cognitive load proxy.
+        Goal B: How hard is the surgeon thinking?
 
-        Uses per-subject fitted temporal kernel to account for individual
-        differences in Pupillary Light Reflex (PLR) dynamics.
+        The pupil dilates for two reasons:
+        1. Darkness (Pupillary Light Reflex - PLR)
+        2. Mental Effort (Cognitive Load)
 
-        Logic:
-        1. Fit per-subject PLR kernel parameters (t_max, n)
-        2. Convolve luminance with fitted kernel
-        3. Fit linear regression: Pupil Diameter ~ Convolved Luminance
-        4. Calculate residuals for cognitive load assessment
+        To measure #2, we must subtract #1.
 
-        Returns:
-            Dictionary with pupil metrics including:
-            - Instantaneous regression metrics (baseline)
-            - Convolved regression metrics (with temporal kernel)
-            - Kernel parameters (t_max, n) as individual difference metrics
-            - R² improvement from temporal modeling
+        We build a mathematical model (Kernel Regression) that predicts
+        how the pupil *should* react to the light seen in the video.
+        Any dilation *beyond* that prediction is assumed to be cognitive load.
         """
         if self.data is None:
             raise ValueError("No data loaded. Call load_data() first.")
 
         logger.info("Calculating luminance-adjusted pupil residuals (Goal B)...")
-        logger.info("  Using per-subject fitted temporal kernel...")
 
         # Get valid data with both pupil and luminance
         mask = (
@@ -357,15 +311,15 @@ class WholeSessionAnalyzer:
         # Estimate sampling rate from timestamps
         dt = np.median(np.diff(timestamps))
         sampling_rate = 1.0 / dt if dt > 0 else 90.0
-        logger.info(f"  Estimated sampling rate: {sampling_rate:.1f} Hz")
 
         # === TEMPORAL KERNEL FITTING ===
         self.kernel_model = PupilLuminanceKernel(sampling_rate_hz=sampling_rate)
 
-        # Fit kernel parameters to this subject's data
+        # Fit kernel parameters (t_max, n) to this subject's data
+        # This customizes the light reflex model to the individual
         kernel_params = self.kernel_model.fit_to_subject(pupil, luminance)
 
-        # Get full regression results (both instantaneous and convolved)
+        # Get full regression results (predict pupil from light)
         kernel_results = self.kernel_model.fit_regression(pupil, luminance)
 
         # Store data for visualization
@@ -374,35 +328,30 @@ class WholeSessionAnalyzer:
         self.convolved_luminance = kernel_results['convolved_luminance']
         self.pupil_predicted = kernel_results['predicted_convolved']
 
-        # Extract metrics
-        r2_inst = kernel_results['r_squared_instantaneous']
-        r2_conv = kernel_results['r_squared_convolved']
-        r2_improvement = kernel_results['r_squared_improvement']
-
         metrics = {
             # Instantaneous regression (baseline for comparison)
-            'regression_r_squared': r2_inst,
+            'regression_r_squared': kernel_results['r_squared_instantaneous'],
             'regression_slope': kernel_results['slope_instantaneous'],
             'regression_intercept': kernel_results['intercept_instantaneous'],
             'regression_p_value': kernel_results['p_value_instantaneous'],
 
-            # Convolved regression (with fitted temporal kernel)
-            'regression_r_squared_convolved': r2_conv,
+            # Convolved regression (with fitted temporal kernel - THE GOOD MODEL)
+            'regression_r_squared_convolved': kernel_results['r_squared_convolved'],
             'regression_slope_convolved': kernel_results['slope_convolved'],
             'regression_intercept_convolved': kernel_results['intercept_convolved'],
             'regression_p_value_convolved': kernel_results['p_value_convolved'],
 
-            # Residuals (from convolved regression - better for cognitive load)
+            # Residuals (High Residuals = High Cognitive Load)
             'mean_residual': kernel_results['residual_mean_convolved'],
             'std_residual': kernel_results['residual_std_convolved'],
 
-            # Kernel parameters (individual difference metrics)
+            # Kernel parameters (Physiological differences)
             'kernel_t_max_ms': kernel_results['kernel_t_max_ms'],
             'kernel_n': kernel_results['kernel_n'],
             'kernel_is_fitted': kernel_results['kernel_is_fitted'],
 
             # Improvement metrics
-            'r_squared_improvement': r2_improvement,
+            'r_squared_improvement': kernel_results['r_squared_improvement'],
             'r_squared_improvement_pct': kernel_results['r_squared_improvement_pct'],
 
             # Raw data statistics
@@ -414,53 +363,28 @@ class WholeSessionAnalyzer:
         }
 
         self.metrics['goal_b'] = metrics
-
-        # Logging
-        logger.info(f"  Instantaneous R²: {r2_inst:.4f}")
-        logger.info(f"  Convolved R²:     {r2_conv:.4f} (improvement: {r2_improvement:+.4f})")
-        logger.info(f"  Kernel params:    t_max={kernel_params.t_max_ms:.1f}ms, n={kernel_params.n:.2f}")
-        logger.info(f"  Kernel fitted:    {kernel_params.is_fitted}")
-        logger.info(f"  Residual std:     {metrics['std_residual']:.4f} mm")
-
-        # Interpretation based on kernel parameters
-        if kernel_params.t_max_ms < 500:
-            logger.info("  PLR interpretation: FAST response (t_max < 500ms)")
-        elif kernel_params.t_max_ms > 800:
-            logger.info("  PLR interpretation: SLOW response (t_max > 800ms) - possible fatigue/load")
-        else:
-            logger.info("  PLR interpretation: TYPICAL response (t_max 500-800ms)")
+        logger.info(f"  Convolved R²:     {metrics['regression_r_squared_convolved']:.4f}")
 
         return metrics
 
     def _empty_pupil_metrics(self) -> Dict[str, float]:
         """Return empty pupil metrics dictionary."""
         return {
-            # Instantaneous regression
             'regression_r_squared': 0.0,
             'regression_slope': 0.0,
             'regression_intercept': 0.0,
             'regression_p_value': 1.0,
-
-            # Convolved regression
             'regression_r_squared_convolved': 0.0,
             'regression_slope_convolved': 0.0,
             'regression_intercept_convolved': 0.0,
             'regression_p_value_convolved': 1.0,
-
-            # Residuals
             'mean_residual': 0.0,
             'std_residual': 0.0,
-
-            # Kernel parameters
             'kernel_t_max_ms': 512.0,
             'kernel_n': 10.1,
             'kernel_is_fitted': False,
-
-            # Improvement metrics
             'r_squared_improvement': 0.0,
             'r_squared_improvement_pct': 0.0,
-
-            # Raw statistics
             'raw_pupil_mean': 0.0,
             'raw_pupil_std': 0.0,
             'luminance_mean': 0.0,
@@ -472,17 +396,13 @@ class WholeSessionAnalyzer:
 
     def calculate_integrated_gyro_motion(self) -> Dict[str, float]:
         """
-        Goal C: Calculate integrated gyroscopic motion as motor stability metric.
+        Goal C: Is the head stable?
 
-        Logic: Sum of absolute rotational velocity over time.
-        Lower total = steadier head = better motor control.
+        We sum up all the rotation measured by the headset's gyroscope.
 
-        Returns:
-            Dictionary with IMU metrics:
-            - total_rotation_deg: Total integrated rotation (degrees)
-            - mean_rotation_rate: Mean rotation rate (deg/s)
-            - rotation_rate_std: Std dev of rotation rate
-            - x/y/z component metrics
+        Metric: **Integrated Rotation (degrees)**
+        - Lower value = Head was steady (Expert focus).
+        - Higher value = Lots of looking around (Novice searching).
         """
         if self.data is None:
             raise ValueError("No data loaded. Call load_data() first.")
@@ -508,17 +428,18 @@ class WholeSessionAnalyzer:
         timestamps = valid_data['gaze_timestamp'].values
 
         # Calculate total rotation magnitude at each sample
+        # Euclidean norm of the rotation vector
         rotation_magnitude = np.sqrt(gyro_x**2 + gyro_y**2 + gyro_z**2)
 
         # Store raw data for visualization
         self.gyro_magnitude = rotation_magnitude
         self.gyro_timestamps = timestamps
-        self.gyro_x = gyro_x  # Pitch
-        self.gyro_y = gyro_y  # Yaw
+        self.gyro_x = gyro_x
+        self.gyro_y = gyro_y
 
-        # Integrate rotation over time (trapezoidal integration)
+        # Integrate rotation over time (Area under the curve)
         dt = np.diff(timestamps)
-        dt = np.clip(dt, 0, 0.1)  # Clip to avoid outliers
+        dt = np.clip(dt, 0, 0.1)  # Clip outliers
 
         # Total integrated rotation
         integrated_rotation = np.sum(rotation_magnitude[:-1] * dt)
@@ -526,7 +447,6 @@ class WholeSessionAnalyzer:
         # Duration
         total_duration = timestamps[-1] - timestamps[0]
 
-        # Calculate per-axis metrics
         metrics = {
             'total_rotation_deg': integrated_rotation,
             'mean_rotation_rate': np.mean(rotation_magnitude),
@@ -540,14 +460,11 @@ class WholeSessionAnalyzer:
             'gyro_z_std': np.std(gyro_z),
             'total_duration_s': total_duration,
             'n_samples': len(valid_data),
-            # Normalized metric (rotation per second)
             'rotation_rate_per_second': integrated_rotation / total_duration if total_duration > 0 else 0
         }
 
         self.metrics['goal_c'] = metrics
         logger.info(f"  Total integrated rotation: {integrated_rotation:.1f} deg")
-        logger.info(f"  Mean rotation rate: {metrics['mean_rotation_rate']:.2f} deg/s")
-        logger.info(f"  Duration: {total_duration:.1f} s")
 
         return metrics
 
@@ -577,21 +494,15 @@ class WholeSessionAnalyzer:
         sample_interval: int = 10
     ) -> Dict[str, float]:
         """
-        Goal D: Classify gaze targets as Tool vs Tissue.
+        Goal D: What is the surgeon looking at?
 
-        Logic: Novices look at tools; experts look at tissue.
-        Uses HSV color thresholding on ROI around gaze point.
+        We look at the pixel color at the gaze location.
+        - **Tools**: Usually silver/grey (Low color saturation).
+        - **Tissue**: Pink/Red/Yellow (High color saturation).
 
-        Args:
-            video_path: Path to video (overrides constructor)
-            sample_interval: Process every Nth gaze sample
-
-        Returns:
-            Dictionary with visual strategy metrics:
-            - tool_gaze_proportion: Proportion of gaze on tools
-            - tissue_gaze_proportion: Proportion of gaze on tissue
-            - other_gaze_proportion: Unclassified targets
-            - tool_tissue_ratio: Ratio of tool to tissue gaze
+        Metric: **Tool/Tissue Ratio**
+        - Experts look at tissue (low ratio).
+        - Novices track their tools (high ratio).
         """
         if self.data is None:
             raise ValueError("No data loaded. Call load_data() first.")
@@ -602,16 +513,12 @@ class WholeSessionAnalyzer:
             return self._empty_visual_strategy_metrics()
 
         logger.info("Classifying gaze targets (Goal D)...")
-        logger.info(f"Video path: {path}")
 
         try:
             cap = cv2.VideoCapture(path)
             if not cap.isOpened():
                 logger.warning(f"Could not open video: {path}")
                 return self._empty_visual_strategy_metrics()
-
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
             # Get valid gaze data with frame indices
             mask = (
@@ -634,14 +541,12 @@ class WholeSessionAnalyzer:
             # ROI size around gaze point (pixels)
             roi_size = 50
 
-            logger.info(f"Processing {len(valid_data)} gaze samples...")
-
             for idx, row in valid_data.iterrows():
                 frame_idx = int(row['active_frame_index'])
                 gaze_x = row['transformed_gaze_x']
                 gaze_y = row['transformed_gaze_y']
 
-                # Seek to frame (only if different from current)
+                # Seek to frame
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
                 ret, frame = cap.read()
 
@@ -662,7 +567,7 @@ class WholeSessionAnalyzer:
 
                 roi = frame[y1:y2, x1:x2]
 
-                # Convert to HSV
+                # Convert to HSV (Hue Saturation Value) color space
                 hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
                 # Classify based on color
@@ -692,8 +597,6 @@ class WholeSessionAnalyzer:
             }
 
             self.metrics['goal_d'] = metrics
-            logger.info(f"  Tool gaze: {metrics['tool_gaze_proportion']*100:.1f}%")
-            logger.info(f"  Tissue gaze: {metrics['tissue_gaze_proportion']*100:.1f}%")
             logger.info(f"  Tool/Tissue ratio: {metrics['tool_tissue_ratio']:.2f}")
 
             return metrics
@@ -715,20 +618,14 @@ class WholeSessionAnalyzer:
         v_mean = np.mean(hsv_roi[:, :, 2])
 
         # Tool detection: Low saturation (grey/metallic)
-        # Metallic tools are typically grey with low saturation
         if s_mean < 50 and 50 < v_mean < 200:
             return 'TOOL'
 
         # Tissue detection: Pink/Red/Yellow tones
-        # Pink: H around 0-10 or 170-180, moderate S
-        # Yellow: H around 20-40, moderate S
-        # Red: H around 0-10 or 170-180, higher S
-
-        # Pink/red tissue
+        # Pink: H around 0-10 or 170-180
+        # Yellow: H around 20-40
         if (h_mean < 20 or h_mean > 160) and s_mean > 50 and v_mean > 100:
             return 'TISSUE'
-
-        # Yellow tissue (fat)
         if 15 < h_mean < 45 and s_mean > 40 and v_mean > 100:
             return 'TISSUE'
 
@@ -757,14 +654,6 @@ class WholeSessionAnalyzer:
     ) -> Dict[str, Dict]:
         """
         Run complete whole-session analysis (Goals A-D).
-
-        Args:
-            csv_path: Path to enhanced gaze CSV
-            video_path: Path to video (for Goal D)
-            include_goal_d: Whether to run visual strategy analysis
-
-        Returns:
-            Dictionary with all metrics organized by goal
         """
         logger.info("=" * 60)
         logger.info("WHOLE-SESSION ANALYSIS")
@@ -809,9 +698,6 @@ class WholeSessionAnalyzer:
     def generate_summary_report(self) -> str:
         """
         Generate a human-readable summary report of all metrics.
-
-        Returns:
-            Formatted string report
         """
         lines = []
         lines.append("=" * 70)
@@ -827,42 +713,16 @@ class WholeSessionAnalyzer:
             lines.append(f"  Fixation Proportion:     {m['fixation_proportion']*100:.1f}%")
             lines.append(f"  Mean Fixation Duration:  {m['mean_fixation_duration_ms']:.0f} ms")
             lines.append(f"  Recording Duration:      {m['total_duration_s']:.1f} s")
-            lines.append("")
-            lines.append("  Saccade Detection (Adaptive MAD Threshold)")
-            lines.append(f"    Threshold:             {m.get('adaptive_threshold_deg_s', 0):.1f} deg/s")
-            lines.append(f"    Valid Saccade Count:   {m['saccade_count']}")
-            lines.append(f"    Mean Amplitude:        {m.get('saccade_amplitude_mean_deg', 0):.1f} deg")
-            lines.append(f"    Max Amplitude:         {m.get('saccade_amplitude_max_deg', 0):.1f} deg")
-            lines.append(f"    Mean Peak Velocity:    {m.get('saccade_peak_velocity_mean_deg_s', 0):.1f} deg/s")
-            lines.append(f"    Max Peak Velocity:     {m.get('saccade_peak_velocity_max_deg_s', 0):.1f} deg/s")
-            lines.append(f"    Main Sequence R²:      {m.get('main_sequence_r_squared', 0):.3f}")
 
         if 'goal_b' in self.metrics:
             m = self.metrics['goal_b']
             lines.append("\nGOAL B: COGNITIVE LOAD (Pupil Analysis)")
             lines.append("-" * 40)
             lines.append("  Pupil-Luminance Regression:")
-            lines.append(f"    Instantaneous R²:      {m['regression_r_squared']:.4f}")
             lines.append(f"    Convolved R²:          {m.get('regression_r_squared_convolved', 0):.4f}")
-            lines.append(f"    R² Improvement:        {m.get('r_squared_improvement', 0):+.4f}")
-            lines.append("")
-            lines.append("  PLR Temporal Kernel (per-subject fitted):")
-            lines.append(f"    t_max (time to peak):  {m.get('kernel_t_max_ms', 512):.1f} ms")
-            lines.append(f"    n (shape param):       {m.get('kernel_n', 10.1):.2f}")
-            lines.append(f"    Fitting succeeded:     {m.get('kernel_is_fitted', False)}")
             lines.append("")
             lines.append("  Cognitive Load Metrics:")
             lines.append(f"    Residual Std Dev:      {m['std_residual']:.4f} mm")
-            lines.append(f"    Raw Pupil Mean:        {m['raw_pupil_mean']:.2f} mm")
-            lines.append(f"    Raw Pupil Std:         {m['raw_pupil_std']:.2f} mm")
-            # Interpretation based on kernel parameters
-            t_max = m.get('kernel_t_max_ms', 512)
-            if t_max < 500:
-                lines.append("  PLR Speed:               FAST (alert, young)")
-            elif t_max > 800:
-                lines.append("  PLR Speed:               SLOW (fatigue, load)")
-            else:
-                lines.append("  PLR Speed:               TYPICAL")
 
         if 'goal_c' in self.metrics:
             m = self.metrics['goal_c']
@@ -870,8 +730,6 @@ class WholeSessionAnalyzer:
             lines.append("-" * 40)
             lines.append(f"  Total Rotation:          {m['total_rotation_deg']:.1f} deg")
             lines.append(f"  Mean Rotation Rate:      {m['mean_rotation_rate']:.2f} deg/s")
-            lines.append(f"  Rotation Rate Std:       {m['rotation_rate_std']:.2f} deg/s")
-            lines.append(f"  Normalized Rate:         {m['rotation_rate_per_second']:.2f} deg/s")
 
         if 'goal_d' in self.metrics and self.metrics['goal_d']:
             m = self.metrics['goal_d']
@@ -879,7 +737,6 @@ class WholeSessionAnalyzer:
             lines.append("-" * 40)
             lines.append(f"  Tool Gaze:               {m['tool_gaze_proportion']*100:.1f}%")
             lines.append(f"  Tissue Gaze:             {m['tissue_gaze_proportion']*100:.1f}%")
-            lines.append(f"  Other:                   {m['other_gaze_proportion']*100:.1f}%")
             lines.append(f"  Tool/Tissue Ratio:       {m['tool_tissue_ratio']:.2f}")
 
         lines.append("\n" + "=" * 70)
@@ -894,14 +751,6 @@ def analyze_subject(
 ) -> Dict:
     """
     Convenience function to analyze a single subject.
-
-    Args:
-        csv_path: Path to enhanced final_gaze_data.csv
-        video_path: Path to scenevideo.mp4 (optional, for Goal D)
-        include_goal_d: Whether to run visual strategy analysis
-
-    Returns:
-        Dictionary with all analysis results
     """
     analyzer = WholeSessionAnalyzer()
     results = analyzer.run_complete_analysis(

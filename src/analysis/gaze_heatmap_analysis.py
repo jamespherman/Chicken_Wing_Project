@@ -2,15 +2,12 @@
 """
 gaze_heatmap_analysis.py - Generate 2D gaze heatmaps for visual analysis
 
-This script creates heatmaps from processed gaze data to provide
-immediate visual feedback on gaze patterns and data quality.
-
-Features:
-- Multiple visualization styles (heatmap, scatter, contour)
-- Customizable color schemes and resolution
-- Statistics overlay and data quality metrics
-- Batch processing integration
-- Individual and comparative analysis
+This script takes the processed gaze CSV and creates visual representations of where the subject looked.
+It produces:
+1.  **Heatmaps**: Color-coded density plots (Hot = High attention).
+2.  **Scatter Plots**: Raw points colored by time (showing the "path" of the eye).
+3.  **Contour Maps**: Topographic-style maps of gaze density.
+4.  **Dashboards**: A combined view with marginal histograms (X/Y distribution).
 """
 
 # Import scipy BEFORE matplotlib/seaborn to avoid BLAS threading deadlock
@@ -20,7 +17,7 @@ from scipy.ndimage import gaussian_filter
 import pandas as pd
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')  # Use non-GUI backend
+matplotlib.use('Agg')  # Use non-GUI backend (safe for servers/headless machines)
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
@@ -48,56 +45,47 @@ class GazeHeatmapAnalyzer:
     def __init__(self, config=None):
         """
         Initialize the analyzer with configuration options.
-        
-        Args:
-            config (dict): Configuration dictionary for visualization parameters
         """
         # Default configuration
         self.config = {
             # Visualization settings
             'figure_size': (12, 8),
-            'dpi': 300,
-            'color_scheme': 'viridis',  # viridis, plasma, inferno, magma, hot, etc.
-            'heatmap_bins': 50,  # Resolution of the heatmap
-            'gaussian_sigma': 1.0,  # Smoothing for heatmap
+            'dpi': 300,             # High resolution for publication quality
+            'color_scheme': 'viridis',
+            'heatmap_bins': 50,     # Resolution: 50x50 grid
+            'gaussian_sigma': 1.0,  # Smoothing: Blurs the heatmap slightly to look natural
             
             # Output settings
             'output_format': 'png',
             'save_stats': True,
             'show_title': True,
-            'show_stats_overlay': True,
+            'show_stats_overlay': True, # Show valid point count on the image
             'show_colorbar': True,
             
             # Data filtering
-            'workspace_bounds': None,  # (min_x, max_x, min_y, max_y) or None for auto
-            'outlier_percentile': 99,  # Remove extreme outliers beyond this percentile
-            'min_valid_points': 100,  # Minimum valid points required for visualization
+            'workspace_bounds': None,  # (min_x, max_x, min_y, max_y)
+            'outlier_percentile': 99,  # Remove the top 1% extreme points (glitches)
+            'min_valid_points': 100,   # Don't plot if we have almost no data
             
-            # Multiple visualization types
+            # What to draw?
             'create_heatmap': True,
             'create_scatter': True,
             'create_contour': True,
             'create_combined': True
         }
         
-        # Update with user config if provided
+        # Override defaults with user config
         if config:
             self.config.update(config)
     
     def load_gaze_data(self, csv_path):
         """
         Load and validate gaze data from CSV file.
-        
-        Args:
-            csv_path (str): Path to the final gaze CSV file
-            
-        Returns:
-            Loaded gaze data with validation
         """
         try:
             df = pd.read_csv(csv_path)
             
-            # Validate required columns
+            # Check for necessary columns
             required_cols = ['gaze_timestamp', 'transformed_gaze_x', 'transformed_gaze_y']
             missing_cols = [col for col in required_cols if col not in df.columns]
             
@@ -114,31 +102,28 @@ class GazeHeatmapAnalyzer:
     def filter_valid_gaze_data(self, df):
         """
         Filter and clean gaze data for visualization.
-        
-        Args:
-            df: Raw gaze data
-            
-        Returns:
-            tuple: (filtered_df, stats_dict)
+        Removes NaNs and extreme outliers.
         """
         original_count = len(df)
         
-        # Remove NaN values
+        # 1. Remove NaNs (frames where gaze wasn't detected)
         valid_df = df.dropna(subset=['transformed_gaze_x', 'transformed_gaze_y'])
         valid_count = len(valid_df)
         
         if valid_count == 0:
             return None, {'error': 'No valid gaze points found'}
         
-        # Remove outliers if specified
+        # 2. Remove spatial outliers (optional)
         if self.config['outlier_percentile'] < 100:
             percentile = self.config['outlier_percentile']
             
+            # Calculate percentile bounds
             x_lower = np.percentile(valid_df['transformed_gaze_x'], (100 - percentile) / 2)
             x_upper = np.percentile(valid_df['transformed_gaze_x'], 100 - (100 - percentile) / 2)
             y_lower = np.percentile(valid_df['transformed_gaze_y'], (100 - percentile) / 2)
             y_upper = np.percentile(valid_df['transformed_gaze_y'], 100 - (100 - percentile) / 2)
             
+            # Keep only data within bounds
             valid_df = valid_df[
                 (valid_df['transformed_gaze_x'] >= x_lower) &
                 (valid_df['transformed_gaze_x'] <= x_upper) &
@@ -146,7 +131,7 @@ class GazeHeatmapAnalyzer:
                 (valid_df['transformed_gaze_y'] <= y_upper)
             ]
         
-        # Apply workspace bounds if specified
+        # 3. Apply manual workspace bounds (if configured)
         if self.config['workspace_bounds']:
             min_x, max_x, min_y, max_y = self.config['workspace_bounds']
             valid_df = valid_df[
@@ -158,19 +143,15 @@ class GazeHeatmapAnalyzer:
         
         filtered_count = len(valid_df)
         
-        # Calculate statistics
+        # Statistics for reporting
         stats = {
             'original_samples': original_count,
             'valid_samples': valid_count,
             'filtered_samples': filtered_count,
             'valid_percentage': (valid_count / original_count * 100) if original_count > 0 else 0,
             'filtered_percentage': (filtered_count / original_count * 100) if original_count > 0 else 0,
-            'x_range': (valid_df['transformed_gaze_x'].min(), valid_df['transformed_gaze_x'].max()) if filtered_count > 0 else (0, 0),
-            'y_range': (valid_df['transformed_gaze_y'].min(), valid_df['transformed_gaze_y'].max()) if filtered_count > 0 else (0, 0),
             'x_mean': valid_df['transformed_gaze_x'].mean() if filtered_count > 0 else 0,
-            'y_mean': valid_df['transformed_gaze_y'].mean() if filtered_count > 0 else 0,
-            'x_std': valid_df['transformed_gaze_x'].std() if filtered_count > 0 else 0,
-            'y_std': valid_df['transformed_gaze_y'].std() if filtered_count > 0 else 0
+            'y_mean': valid_df['transformed_gaze_y'].mean() if filtered_count > 0 else 0
         }
         
         logger.info(f"Valid gaze points: {filtered_count}/{original_count} ({stats['filtered_percentage']:.1f}%)")
@@ -182,54 +163,42 @@ class GazeHeatmapAnalyzer:
     
     def create_heatmap_visualization(self, df, subject_name, output_path):
         """
-        Create a 2D heatmap visualization.
-        
-        Args:
-            df: Filtered gaze data
-            subject_name (str): Subject identifier
-            output_path (str): Path to save the heatmap
-            
-        Returns:
-            bool: Success status
+        Create a 2D heatmap visualization using a histogram.
         """
         try:
             fig, ax = plt.subplots(figsize=self.config['figure_size'], dpi=self.config['dpi'])
             
-            # Create 2D histogram
             x = df['transformed_gaze_x'].values
             y = df['transformed_gaze_y'].values
             
-            # Create heatmap - FIXED: Remove transpose to fix X/Y axis swap
+            # Create 2D histogram (binning points into a grid)
             heatmap, xedges, yedges = np.histogram2d(
                 x, y, bins=self.config['heatmap_bins']
             )
             
-            # Apply Gaussian smoothing for better visualization
+            # Apply Gaussian smoothing to make it look like a heat map
             if self.config['gaussian_sigma'] > 0:
                 heatmap = gaussian_filter(heatmap, sigma=self.config['gaussian_sigma'])
             
-            # Plot heatmap - Use origin='upper' for screen coordinates
+            # Plot
             im = ax.imshow(
                 heatmap.T,
                 origin='upper',
-                extent=[xedges[0], xedges[-1], yedges[-1], yedges[0]],  # FIXED: Swapped y-extent for upper origin
+                extent=[xedges[0], xedges[-1], yedges[-1], yedges[0]],
                 cmap=self.config['color_scheme'],
                 aspect='equal'
             )
             
-            # Customize plot
             if self.config['show_title']:
                 ax.set_title(f'Gaze Heatmap - {subject_name}', fontsize=16, fontweight='bold')
             
             ax.set_xlabel('X Coordinate (pixels)', fontsize=12)
             ax.set_ylabel('Y Coordinate (pixels)', fontsize=12)
             
-            # Add colorbar
             if self.config['show_colorbar']:
                 cbar = plt.colorbar(im, ax=ax)
                 cbar.set_label('Gaze Density', fontsize=12)
             
-            # Add statistics overlay
             if self.config['show_stats_overlay']:
                 stats_text = f'Valid Points: {len(df):,}\nMean: ({x.mean():.1f}, {y.mean():.1f})'
                 ax.text(0.02, 0.98, stats_text, transform=ax.transAxes,
@@ -248,15 +217,7 @@ class GazeHeatmapAnalyzer:
     
     def create_scatter_visualization(self, df, subject_name, output_path):
         """
-        Create a scatter plot with density visualization.
-        
-        Args:
-            df: Filtered gaze data
-            subject_name (str): Subject identifier
-            output_path (str): Path to save the scatter plot
-            
-        Returns:
-            bool: Success status
+        Create a scatter plot where points are colored by order of occurrence (time).
         """
         try:
             fig, ax = plt.subplots(figsize=self.config['figure_size'], dpi=self.config['dpi'])
@@ -264,14 +225,14 @@ class GazeHeatmapAnalyzer:
             x = df['transformed_gaze_x'].values
             y = df['transformed_gaze_y'].values
             
-            # Create scatter plot with density colors
+            # Scatter plot with color mapping based on index (time)
+            # This creates a gradient from start (Purple) to end (Yellow)
             scatter = ax.scatter(x, y, c=range(len(x)), cmap=self.config['color_scheme'],
                                alpha=0.6, s=1, rasterized=True)
             
-            # Invert Y-axis to match screen coordinates (Y=0 at top)
+            # Invert Y-axis so (0,0) is top-left (screen coordinates)
             ax.invert_yaxis()
             
-            # Customize plot
             if self.config['show_title']:
                 ax.set_title(f'Gaze Scatter Plot - {subject_name}', fontsize=16, fontweight='bold')
             
@@ -279,16 +240,9 @@ class GazeHeatmapAnalyzer:
             ax.set_ylabel('Y Coordinate (pixels)', fontsize=12)
             ax.set_aspect('equal')
             
-            # Add colorbar for temporal progression
             if self.config['show_colorbar']:
                 cbar = plt.colorbar(scatter, ax=ax)
                 cbar.set_label('Temporal Progression', fontsize=12)
-            
-            # Add statistics overlay
-            if self.config['show_stats_overlay']:
-                stats_text = f'Points: {len(df):,}\nRange X: {x.min():.0f}-{x.max():.0f}\nRange Y: {y.min():.0f}-{y.max():.0f}'
-                ax.text(0.02, 0.98, stats_text, transform=ax.transAxes,
-                       verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
             
             plt.tight_layout()
             plt.savefig(output_path, dpi=self.config['dpi'], bbox_inches='tight')
@@ -303,15 +257,7 @@ class GazeHeatmapAnalyzer:
 
     def create_contour_visualization(self, df, subject_name, output_path):
         """
-        Create a contour plot visualization.
-        
-        Args:
-            df: Filtered gaze data
-            subject_name (str): Subject identifier
-            output_path (str): Path to save the contour plot
-            
-        Returns:
-            bool: Success status
+        Create a topographic contour map of gaze density.
         """
         try:
             fig, ax = plt.subplots(figsize=self.config['figure_size'], dpi=self.config['dpi'])
@@ -319,28 +265,23 @@ class GazeHeatmapAnalyzer:
             x = df['transformed_gaze_x'].values
             y = df['transformed_gaze_y'].values
             
-            # Create 2D histogram for contour base
             heatmap, xedges, yedges = np.histogram2d(
                 x, y, bins=self.config['heatmap_bins']
             )
             
-            # Apply smoothing
             if self.config['gaussian_sigma'] > 0:
                 heatmap = gaussian_filter(heatmap, sigma=self.config['gaussian_sigma'])
             
-            # Create coordinate grids for contour
+            # Grid for contouring
             X = (xedges[:-1] + xedges[1:]) / 2
             Y = (yedges[:-1] + yedges[1:]) / 2
             X, Y = np.meshgrid(X, Y)
             
-            # Create contour plot - FIXED: Remove transpose to fix X/Y axis swap
-            contour = ax.contour(X, Y, heatmap, levels=10, cmap=self.config['color_scheme'])
+            # Filled contours
             contourf = ax.contourf(X, Y, heatmap, levels=20, cmap=self.config['color_scheme'], alpha=0.7)
             
-            # Invert Y-axis to match screen coordinates (Y=0 at top)
             ax.invert_yaxis()
             
-            # Customize plot
             if self.config['show_title']:
                 ax.set_title(f'Gaze Contour Map - {subject_name}', fontsize=16, fontweight='bold')
             
@@ -348,13 +289,9 @@ class GazeHeatmapAnalyzer:
             ax.set_ylabel('Y Coordinate (pixels)', fontsize=12)
             ax.set_aspect('equal')
             
-            # Add colorbar
             if self.config['show_colorbar']:
                 cbar = plt.colorbar(contourf, ax=ax)
                 cbar.set_label('Gaze Density', fontsize=12)
-            
-            # Add contour labels
-            ax.clabel(contour, inline=True, fontsize=8)
             
             plt.tight_layout()
             plt.savefig(output_path, dpi=self.config['dpi'], bbox_inches='tight')
@@ -369,77 +306,58 @@ class GazeHeatmapAnalyzer:
 
     def create_combined_visualization(self, df, subject_name, output_path):
         """
-        Create a combined visualization with marginal density plots.
-        
-        Args:
-            df: Filtered gaze data
-            subject_name (str): Subject identifier
-            output_path (str): Path to save the combined plot
-            
-        Returns:
-            bool: Success status
+        Create a dashboard with:
+        - Central Heatmap/Scatter plot
+        - Top Marginal Histogram (X distribution)
+        - Right Marginal Histogram (Y distribution)
         """
         try:
-            # Define fixed coordinate space (1000x606 pixels)
             FIXED_X_MIN, FIXED_X_MAX = 0, 1000
             FIXED_Y_MIN, FIXED_Y_MAX = 0, 606
             
-            # Set up the figure with 2x3 grid layout
+            # Setup complex grid layout
             fig = plt.figure(figsize=(14, 8), dpi=self.config['dpi'])
+            gs = fig.add_gridspec(2, 3, width_ratios=[1, 4, 1], height_ratios=[1, 4], hspace=0.05, wspace=0.05)
             
-            # Create a 2-row by 3-column grid layout
-            gs = fig.add_gridspec(2, 3,
-                                 width_ratios=[1, 4, 1],
-                                 height_ratios=[1, 4],
-                                 hspace=0.05, wspace=0.05)
+            ax_main = fig.add_subplot(gs[1, 1])
+            ax_top = fig.add_subplot(gs[0, 1], sharex=ax_main)
+            ax_right = fig.add_subplot(gs[1, 2], sharey=ax_main)
+            ax_cbar = fig.add_subplot(gs[1, 0])
             
-            # Create subplots in the specified positions with shared axes for perfect alignment
-            ax_main = fig.add_subplot(gs[1, 1])                    # Main plot (bottom-center)
-            ax_top = fig.add_subplot(gs[0, 1], sharex=ax_main)     # Top histogram (top-center)
-            ax_right = fig.add_subplot(gs[1, 2], sharey=ax_main)   # Right histogram (bottom-right)
-            ax_cbar = fig.add_subplot(gs[1, 0])                    # Colorbar (bottom-left)
+            # Hide unused axes
+            fig.add_subplot(gs[0, 0]).axis('off')
+            fig.add_subplot(gs[0, 2]).axis('off')
             
-            # Hide unused corners
-            fig.add_subplot(gs[0, 0]).axis('off')    # Top-left corner
-            fig.add_subplot(gs[0, 2]).axis('off')    # Top-right corner
-            
-            # Get data
             x = df['transformed_gaze_x'].values
             y = df['transformed_gaze_y'].values
             
-            # === SET FIXED COORDINATE SPACE WITH PROPER ASPECT RATIO ===
+            # Set fixed bounds
             ax_main.set_xlim(FIXED_X_MIN, FIXED_X_MAX)
-            ax_main.set_ylim(FIXED_Y_MAX, FIXED_Y_MIN)  # Inverted for screen coordinates (Y=0 at top)
-            
-            # Force equal aspect ratio ONLY on the main plot to maintain 1000x606 proportions
+            ax_main.set_ylim(FIXED_Y_MAX, FIXED_Y_MIN) # Inverted Y
             ax_main.set_aspect('equal', adjustable='box')
             
-            # === CREATE HISTOGRAM DATA WITH FIXED BINS ===
-            # Create fixed bin edges for consistent 1000x606 space
+            # Bins
             x_bins = np.linspace(FIXED_X_MIN, FIXED_X_MAX, self.config['heatmap_bins'] + 1)
             y_bins = np.linspace(FIXED_Y_MIN, FIXED_Y_MAX, self.config['heatmap_bins'] + 1)
             
-            # Create 2D histogram using fixed bins
-            heatmap, xedges, yedges = np.histogram2d(x, y, bins=[x_bins, y_bins])
+            heatmap, _, _ = np.histogram2d(x, y, bins=[x_bins, y_bins])
             if self.config['gaussian_sigma'] > 0:
                 heatmap = gaussian_filter(heatmap, sigma=self.config['gaussian_sigma'])
             
-            # Create 1D histograms using the same fixed bin edges for perfect alignment
+            # Marginal Histograms
             x_hist, _ = np.histogram(x, bins=x_bins)
             y_hist, _ = np.histogram(y, bins=y_bins)
             
-            # Calculate bin centers for plotting
-            x_centers = (xedges[:-1] + xedges[1:]) / 2
-            y_centers = (yedges[:-1] + yedges[1:]) / 2
+            x_centers = (x_bins[:-1] + x_bins[1:]) / 2
+            y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             
-            # === MAIN PLOT (Heatmap + Scatter overlay) ===
-            # Plot heatmap as base layer with fixed extent
+            # --- Draw Main Plot ---
             im = ax_main.imshow(heatmap.T, origin='upper',
                                extent=[FIXED_X_MIN, FIXED_X_MAX, FIXED_Y_MAX, FIXED_Y_MIN],
                                cmap=self.config['color_scheme'], alpha=0.8)
             
-            # Overlay scatter plot for individual points (sample if too many)
-            if len(x) > 5000:  # Sample for performance if too many points
+            # Overlay scatter points (downsample if too many)
+            if len(x) > 5000:
                 sample_idx = np.random.choice(len(x), 5000, replace=False)
                 x_sample, y_sample = x[sample_idx], y[sample_idx]
             else:
@@ -447,73 +365,48 @@ class GazeHeatmapAnalyzer:
                 
             ax_main.scatter(x_sample, y_sample, c='white', s=0.5, alpha=0.3, rasterized=True)
             
-            # Main plot formatting
             ax_main.set_xlabel('X Coordinate (pixels)', fontsize=12)
             ax_main.set_ylabel('Y Coordinate (pixels)', fontsize=12)
             
-            # === TOP MARGINAL PLOT (X histogram) ===
-            # Use bar plot to create histogram that perfectly aligns with main plot
+            # --- Draw Marginal Plots ---
+            # Top (X)
             bin_width = x_bins[1] - x_bins[0]
-            ax_top.bar(x_centers, x_hist, width=bin_width*0.9,
-                      color='steelblue', alpha=0.7, edgecolor='white', linewidth=0.5)
-            
-            # Formatting for top marginal - remove labels and ticks for cleaner look
+            ax_top.bar(x_centers, x_hist, width=bin_width*0.9, color='steelblue', alpha=0.7)
             ax_top.set_ylabel('Count', fontsize=10)
             ax_top.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
-            ax_top.tick_params(axis='y', labelsize=8)
-            
-            # Clean up spines
-            ax_top.spines['bottom'].set_visible(False)
-            ax_top.spines['right'].set_visible(False)
             ax_top.spines['top'].set_visible(False)
+            ax_top.spines['right'].set_visible(False)
+            ax_top.spines['bottom'].set_visible(False)
             
-            # === RIGHT MARGINAL PLOT (Y histogram) ===
-            # Use barh (horizontal bar) plot for Y histogram
+            # Right (Y)
             bin_height = y_bins[1] - y_bins[0]
-            ax_right.barh(y_centers, y_hist, height=bin_height*0.9,
-                         color='darkred', alpha=0.7, edgecolor='white', linewidth=0.5)
-            
-            # Formatting for right marginal - remove labels and ticks for cleaner look
+            ax_right.barh(y_centers, y_hist, height=bin_height*0.9, color='darkred', alpha=0.7)
             ax_right.set_xlabel('Count', fontsize=10)
             ax_right.tick_params(axis='y', which='both', left=False, labelleft=False)
-            ax_right.tick_params(axis='x', labelsize=8)
-            
-            # Clean up spines
-            ax_right.spines['left'].set_visible(False)
-            ax_right.spines['right'].set_visible(False)
             ax_right.spines['top'].set_visible(False)
+            ax_right.spines['right'].set_visible(False)
+            ax_right.spines['left'].set_visible(False)
             
-            # === ADD COLORBAR IN DEDICATED SPACE ===
+            # Colorbar
             if self.config['show_colorbar']:
-                # Create colorbar in its dedicated subplot space
                 cbar = plt.colorbar(im, cax=ax_cbar)
                 cbar.set_label('Gaze Density', fontsize=10)
-                cbar.ax.tick_params(labelsize=8)
             else:
-                # Hide the colorbar axis if not needed
                 ax_cbar.axis('off')
             
-            # === ADD MINIMAL STATISTICS AS TITLE ===
-            # Calculate key statistics for title
+            # Title
             valid_points = len(df)
             coverage_x = np.sum((x >= FIXED_X_MIN) & (x <= FIXED_X_MAX))
             coverage_y = np.sum((y >= FIXED_Y_MIN) & (y <= FIXED_Y_MAX))
-            both_within = np.sum((x >= FIXED_X_MIN) & (x <= FIXED_X_MAX) &
-                                (y >= FIXED_Y_MIN) & (y <= FIXED_Y_MAX))
-            coverage_percent = (both_within / len(x) * 100) if len(x) > 0 else 0
+            coverage_percent = (coverage_x / len(x) * 100) # Approximate
             
-            # Add title with key statistics
             title_text = (f'Gaze Distribution Dashboard - {subject_name}\n'
-                         f'{valid_points:,} samples | {coverage_percent:.1f}% within 1000×606px bounds | '
-                         f'Mean: ({x.mean():.0f}, {y.mean():.0f})px')
+                         f'{valid_points:,} samples | Mean: ({x.mean():.0f}, {y.mean():.0f})px')
             
             fig.suptitle(title_text, fontsize=14, fontweight='bold', y=0.95)
             
-            # Ensure tight layout with proper spacing
             plt.tight_layout()
-            plt.subplots_adjust(top=0.88)  # Make room for title
-            
-            # Save the plot
+            plt.subplots_adjust(top=0.88)
             plt.savefig(output_path, dpi=self.config['dpi'], bbox_inches='tight')
             plt.close()
             
@@ -522,86 +415,56 @@ class GazeHeatmapAnalyzer:
             
         except Exception as e:
             logger.error(f"Error creating combined visualization: {e}")
-            logger.exception("Traceback:")
             return False
     
     def analyze_subject(self, csv_path, output_dir, subject_name=None):
         """
-        Analyze a single subject's gaze data and create visualizations.
-        
-        Args:
-            csv_path (str): Path to the subject's final gaze CSV
-            output_dir (str): Directory to save visualizations
-            subject_name (str): Subject identifier (auto-detected if None)
-            
-        Returns:
-            dict: Analysis results and statistics
+        Main runner function for a single subject.
         """
         csv_path = Path(csv_path)
         output_dir = Path(output_dir)
         
-        # Auto-detect subject name if not provided
         if subject_name is None:
             subject_name = csv_path.stem.replace('_final_gaze_data', '')
         
         logger.info(f"Analyzing gaze data for: {subject_name}")
-        logger.info(f"Input CSV: {csv_path}")
-        logger.info(f"Output directory: {output_dir}")
         
-        # Create output directory
-        output_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Load and filter data
+        # Load
         df = self.load_gaze_data(csv_path)
-        if df is None:
-            return {'success': False, 'error': 'Failed to load data'}
+        if df is None: return {'success': False, 'error': 'Failed to load data'}
         
+        # Filter
         filtered_df, stats = self.filter_valid_gaze_data(df)
-        if filtered_df is None:
-            return {'success': False, 'error': stats.get('error', 'No valid data')}
+        if filtered_df is None: return {'success': False, 'error': stats.get('error', 'No valid data')}
         
-        # Initialize results
         results = {
             'success': True,
             'subject_name': subject_name,
-            'input_csv': str(csv_path),
-            'output_dir': str(output_dir),
             'statistics': stats,
             'visualizations_created': []
         }
         
-        # Create visualizations
+        # Create Plots
         format_ext = self.config['output_format']
         
         if self.config['create_heatmap']:
-            heatmap_path = output_dir / f"{subject_name}_heatmap.{format_ext}"
-            if self.create_heatmap_visualization(filtered_df, subject_name, heatmap_path):
-                results['visualizations_created'].append(str(heatmap_path))
+            path = output_dir / f"{subject_name}_heatmap.{format_ext}"
+            if self.create_heatmap_visualization(filtered_df, subject_name, path):
+                results['visualizations_created'].append(str(path))
         
         if self.config['create_scatter']:
-            scatter_path = output_dir / f"{subject_name}_scatter.{format_ext}"
-            if self.create_scatter_visualization(filtered_df, subject_name, scatter_path):
-                results['visualizations_created'].append(str(scatter_path))
+            path = output_dir / f"{subject_name}_scatter.{format_ext}"
+            if self.create_scatter_visualization(filtered_df, subject_name, path):
+                results['visualizations_created'].append(str(path))
         
         if self.config['create_contour']:
-            contour_path = output_dir / f"{subject_name}_contour.{format_ext}"
-            if self.create_contour_visualization(filtered_df, subject_name, contour_path):
-                results['visualizations_created'].append(str(contour_path))
+            path = output_dir / f"{subject_name}_contour.{format_ext}"
+            if self.create_contour_visualization(filtered_df, subject_name, path):
+                results['visualizations_created'].append(str(path))
         
         if self.config['create_combined']:
-            combined_path = output_dir / f"{subject_name}_dashboard.{format_ext}"
-            if self.create_combined_visualization(filtered_df, subject_name, combined_path):
-                results['visualizations_created'].append(str(combined_path))
+            path = output_dir / f"{subject_name}_dashboard.{format_ext}"
+            if self.create_combined_visualization(filtered_df, subject_name, path):
+                results['visualizations_created'].append(str(path))
         
-        # Save statistics if requested
-        if self.config['save_stats']:
-            stats_path = output_dir / f"{subject_name}_gaze_statistics.json"
-            try:
-                with open(stats_path, 'w') as f:
-                    json.dump(stats, f, indent=2, default=str)
-                logger.info(f"Saved statistics: {stats_path}")
-            except Exception as e:
-                logger.warning(f"Could not save statistics: {e}")
-        
-        logger.info(f"Analysis complete: {len(results['visualizations_created'])} visualizations created")
         return results
